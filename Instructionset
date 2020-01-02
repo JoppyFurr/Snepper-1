@@ -1,0 +1,88 @@
+
+Control Logic Outputs:
+
+  [12:15] - Data Bus Driver
+            0 → r1
+            1 → r2
+            2 → r3
+            3 → r4
+            4 → ram
+            5 → ah
+            6 → al
+            7 → add
+            8 → add-c
+            9 → sub
+            a → sub-c
+            b → or
+            c → and
+            d → xor
+            e → rshift
+            f → I/O
+
+  [8:11]  - Data Bus Consumer
+            0 → r1
+            1 → r2
+            2 → r3
+            3 → r4
+            4 → ram
+            5 → dh
+            6 → dl
+            7 → a1
+            8 → a2
+            9 → none (Configuration register?)
+            a → none
+            b → none
+            c → none
+            d → none
+            e → none
+            f → I/O
+
+  [6:7]   - Address Bus Driver
+            0 → PC
+            1 → DC
+            2 → SP
+            3 → DH/DL
+
+  [3:5]   - Address Bus Consumer
+            0 → PC
+            1 → DC
+            2 → SP
+            3 → AH/AL
+            4 → none
+            5 → none
+            6 → none
+            7 → none
+
+  [0:2]   - Misc
+            0 → PC Count
+            1 → DC Count
+            2 → SP Increase
+            3 → SP Decrease
+            4 → none (I/O control?)
+            5 → none
+            6 → none
+            7 → Instruction complete
+          
+
+128 instructions
+
+To deal with all possibilities of two registers plus one of 6 ALU operations, break them up
+into two sub-instructions. One to load the ALU, one to do the operation
+
+Nop                             ×  1
+Jmp, Jmp-z, Jmp-nz              ×  3
+Mov r - r                       × 16
+Mov r,r - ALU                   × 16
+Add, Sub, Add-c, Sub-c          ×  4
+And, Or, Xor, Lshift, Rshift    ×  5
+Push, Pop                       ×  2
+Call, Ret                       ×  2
+Input, Output r1-r4             ×  8
+Load, Store                     ×  8
+Load-n, Store-n                 ×  8
+Reset                           ×  1
+
+Total:                        74
+
+TODO:
+ - Configuration register (halt, LEDs, RAM/ROM switch)
