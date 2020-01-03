@@ -35,8 +35,8 @@ Control Logic Outputs:
             6 → dl
             7 → a1
             8 → a2
-            9 → none (Configuration register?)
-            a → none
+            9 → IR
+            a → none (Configuration register?)
             b → none
             c → none
             d → none
@@ -70,33 +70,63 @@ Control Logic Outputs:
             7 → Instruction complete
 
 256 instructions:
+  0 - 31   (32) : Move instructions
+ 32 - 95   (64) : Memory instructions
+ 96 - ??        : Jump instructions
+112 - 127  (64) : I/O instructions
+128 - 255 (128) : ALU instructions
+
+--------
 
   0     mov/nop rX, rX
- 16     load    rX, [dh, rX]
- 32     store   rX, [dh, rX]
- 48     load    rX, [0xXXXX]
- 52     store   rX, [0xXXXX]
- 56     load-n  rX
- 60     store-n rX
- 64     mov     dh, rX
- 68     mov     sp, rX
- 52     loadi   rX, 0xXX
- 56     loadi   hl, 0xXXXX
- 57     jmp
- 58     jmp-z
- 59     jmp-pos
- 60     jmp-nz
- 61     jmp-neg
- 62     cfgset  0xXX
- 63     cfgclr  0xXX
- 64     push    rX
- 68     pop     rX
- 72
- 80
- 96
-112
+ 16     mov     dh, rX
+ 20     mov     dl, rX
+ 24     mov     sp, hl
+ 25     mov     sp, 0xXXXX
+ 26     cfg-set 0xXX
+ 27     cfg-clr 0xXX
+ 28-31  unused
 
-128-255: ALU Instructions
+ 32     load    rX, [dh, rX]
+ 48     store   rX, [dh, rX]
+ 64     load    rX, [0xXXXX]
+ 68     store   rX, [0xXXXX]
+ 72     load-n  rX
+ 76     store-n rX
+ 80     push    rX
+ 84     pop     rX
+ 88     loadi   rX, 0xXX
+ 92     loadi   hl, 0xXXXX
+ 93-95  unused
+
+ 96     jmp     hl
+ 97     unused
+ 98     jmp-z   hl
+ 99     jmp-neg hl
+100     jmp-nz  hl
+101     jmp-pos hl
+102     jmp     0xXXXX
+103     unused
+104     jmp-z   0xXXXX
+105     jmp-neg 0xXXXX
+106     jmp-nz  0xXXXX
+107     jmp-pos 0xXXXX
+108     call    hl
+109     call    0xXXXX
+110     ret
+111     unused
+
+112     input   rX,   0xXX  (value, device)
+116     output  rX,   0xXX
+120     input   0xXX, 0xXX
+121     output  0xXX, 0xXX
+ TODO: Direct IO-to-auto-inc-memory instructions
+122     input...
+123
+124
+125
+126
+127
 
 128     add     rX, rX
 144     addc    rX, rX
@@ -107,17 +137,14 @@ Control Logic Outputs:
 224     xor     rX, rX
 240     lshift  rX, {1,2}
 248     rshift  rX, {1,2}
-
 --------
 
-Call, Ret                       ×  2
-Input, Output r1-r4             ×  8
-
+Configuration register:
  0 - Halt
- 1 - RAM-only
+ 1 - ROM-disable
  2 - unused
  3 - unused
  4 - unused
  5 - unused
- 6 - unused
+ 6 - LED-disable?
  7 - Reset
