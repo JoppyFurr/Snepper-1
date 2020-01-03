@@ -1,4 +1,10 @@
 
+Control Logic Inputs:
+
+  [4:11]  - Instruction
+  [3]     - Flag (zero-flag if lsb=0, neg-flag if lsb=1)
+  [0:2]   - Step
+
 Control Logic Outputs:
 
   [12:15] - Data Bus Driver
@@ -62,27 +68,56 @@ Control Logic Outputs:
             5 → none
             6 → none
             7 → Instruction complete
-          
 
-128 instructions
+256 instructions:
 
-To deal with all possibilities of two registers plus one of 6 ALU operations, break them up
-into two sub-instructions. One to load the ALU, one to do the operation
+  0     mov/nop rX, rX
+ 16     load    rX, [dh, rX]
+ 32     store   rX, [dh, rX]
+ 48     load    rX, [0xXXXX]
+ 52     store   rX, [0xXXXX]
+ 56     load-n  rX
+ 60     store-n rX
+ 64     mov     dh, rX
+ 68     mov     sp, rX
+ 52     loadi   rX, 0xXX
+ 56     loadi   hl, 0xXXXX
+ 57     jmp
+ 58     jmp-z
+ 59     jmp-pos
+ 60     jmp-nz
+ 61     jmp-neg
+ 62     cfgset  0xXX
+ 63     cfgclr  0xXX
+ 64     push    rX
+ 68     pop     rX
+ 72
+ 80
+ 96
+112
 
-Nop                             ×  1
-Jmp, Jmp-z, Jmp-nz              ×  3
-Mov r - r                       × 16
-Mov r,r - ALU                   × 16
-Add, Sub, Add-c, Sub-c          ×  4
-And, Or, Xor, Lshift, Rshift    ×  5
-Push, Pop                       ×  2
+128-255: ALU Instructions
+
+128     add     rX, rX
+144     addc    rX, rX
+160     sub     rX, rX
+176     subc    rX, rX
+192     and     rX, rX
+208     or      rX, rX
+224     xor     rX, rX
+240     lshift  rX, {1,2}
+248     rshift  rX, {1,2}
+
+--------
+
 Call, Ret                       ×  2
 Input, Output r1-r4             ×  8
-Load, Store                     ×  8
-Load-n, Store-n                 ×  8
-Reset                           ×  1
 
-Total:                        74
-
-TODO:
- - Configuration register (halt, LEDs, RAM/ROM switch)
+ 0 - Halt
+ 1 - RAM-only
+ 2 - unused
+ 3 - unused
+ 4 - unused
+ 5 - unused
+ 6 - unused
+ 7 - Reset
