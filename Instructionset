@@ -76,75 +76,72 @@ Assembler macros:
         ldi     sp, 0xXXXX
 
 256 instructions:
-  0 - 31   (32) : Move and load-immediate
- 32 - 95   (64) : Memory instructions
- 96 - ??        : Jump instructions
-112 - 127  (64) : I/O instructions
-128 - 255 (128) : ALU instructions
+ 00-1f  (32) : Move and load-immediate
+ 20-5f  (64) : Memory instructions
+ 60-6f  (16) : Jump instructions
+ 70-7f  (16) : I/O instructions
+ 80-ff (128) : ALU instructions
 
 
 --------
 
-  0     mov/nop rX, rX
- 16     ldi     rX, 0xXX
- 20     mov     dh, rX
- 24     mov     dl, rX
- 28     ldi     hl, 0xXXXX
- 29     mov     dc, hl
- 30     mov     sp, hl
- 31     unused
+ 00     mov/nop rX, rX
+ 10     ldi     rX, 0xXX
+ 14     mov     dh, rX
+ 18     mov     dl, rX
+ 1c     ldi     hl, 0xXXXX
+ 1d     mov     dc, hl
+ 1e     mov     sp, hl
+ 1f     unused
 
- ??     cfg-set 0xXX
- ??     cfg-clr 0xXX
+ 20     load    rX, [dh, rX]
+ 30     store   rX, [dh, rX]
+ 40     load    rX, [0xXXXX]
+ 44     store   rX, [0xXXXX]
+ 48     load-n  rX
+ 4c     store-n rX
+ 50     push    rX
+ 54     pop     rX
+ 58-5f  unused
 
- 32     load    rX, [dh, rX]
- 48     store   rX, [dh, rX]
- 64     load    rX, [0xXXXX]
- 68     store   rX, [0xXXXX]
- 72     load-n  rX
- 76     store-n rX
- 80     push    rX
- 84     pop     rX
- 93-95  unused
+ 60     jmp     hl
+ 61     unused
+ 62     jmp-z   hl
+ 63     jmp-neg hl
+ 64     jmp-nz  hl
+ 65     jmp-pos hl
+ 66     jmp     0xXXXX
+ 67     unused
+ 68     jmp-z   0xXXXX
+ 69     jmp-neg 0xXXXX
+ 6a     jmp-nz  0xXXXX
+ 6b     jmp-pos 0xXXXX
+ 6c     call    hl
+ 6d     call    0xXXXX
+ 6e     ret
+ 6f     unused
 
- 96     jmp     hl
- 97     unused
- 98     jmp-z   hl
- 99     jmp-neg hl
-100     jmp-nz  hl
-101     jmp-pos hl
-102     jmp     0xXXXX
-103     unused
-104     jmp-z   0xXXXX
-105     jmp-neg 0xXXXX
-106     jmp-nz  0xXXXX
-107     jmp-pos 0xXXXX
-108     call    hl
-109     call    0xXXXX
-110     ret
-111     unused
-
-112     input   rX,   0xXX  (value, device)
-116     output  rX,   0xXX
-120     input   0xXX, 0xXX
-121     output  0xXX, 0xXX
+ 70     input   rX,   0xXX  (value, device)
+ 74     output  rX,   0xXX
+ 78     input   0xXX, 0xXX
+ 79     output  0xXX, 0xXX
  TODO: Direct IO-to-auto-inc-memory instructions
-122     input...
-123
-124
-125
-126
-127
+ 7a     input...
+ 7b
+ 7c
+ 7d
+ 7e     cfg-set 0xXX
+ 7f     cfg-clr 0xXX
 
-128     add     rX, rX
-144     addc    rX, rX
-160     sub     rX, rX
-176     subc    rX, rX
-192     and     rX, rX
-208     or      rX, rX
-224     xor     rX, rX
-240     lshift  rX, {1,2}
-248     rshift  rX, {1,2}
+ 80     add     rX, rX
+ 90     addc    rX, rX
+ a0     sub     rX, rX
+ b0     subc    rX, rX
+ c0     and     rX, rX
+ d0     or      rX, rX
+ e0     xor     rX, rX
+ f0     lshift  rX, {1,2}
+ f8     rshift  rX, {1,2}
 --------
 
 Configuration register:

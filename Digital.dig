@@ -561,7 +561,11 @@ Bootstrap Plan:
         </entry>
         <entry>
           <string>Data</string>
-          <data>0,0,10,69,1,6,b</data>
+          <data>10,de,11,ad,12,be,13,ef</data>
+        </entry>
+        <entry>
+          <string>lastDataFile</string>
+          <string>/home/joppy/Projects/Computer/Assembler/rom.hex</string>
         </entry>
       </elementAttributes>
       <pos x="-60" y="1980"/>
