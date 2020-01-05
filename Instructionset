@@ -1,6 +1,7 @@
 
 Control Logic Inputs:
 
+  [12]    - unused
   [4:11]  - Instruction
   [3]     - Flag (zero-flag if lsb=0, neg-flag if lsb=1)
   [0:2]   - Step
