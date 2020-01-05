@@ -8,7 +8,7 @@ typedef enum DataDriver_e {
     DATA_OUT_R2     = 0x1000,
     DATA_OUT_R3     = 0x2000,
     DATA_OUT_R4     = 0x3000,
-    DATA_OUT_RAM    = 0x4000,
+    DATA_OUT_MEM    = 0x4000,
     DATA_OUT_AH     = 0x5000,
     DATA_OUT_AL     = 0x6000,
     DATA_OUT_ADD    = 0x7000,
@@ -82,20 +82,19 @@ void store_step (uint8_t instruction, uint8_t step, uint16_t value )
 }
 
 /* Note: Does the real ram work immediately? Or does it require a clock to take in the address? */
-#define READ_INSTRUCTION store_step(instruction, 0, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_RAM | DATA_IN_IR  | MISC_PC_COUNT)
+int instruction = 0;
+#define READ_INSTRUCTION store_step(instruction, 0, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_IR  | MISC_PC_COUNT)
 
 /*
  * Generate the microcode
  */
 void generate_microcode ()
 {
-    int instruction = 0;
-
     uint16_t reg_out[4] = { DATA_OUT_R1, DATA_OUT_R2, DATA_OUT_R3, DATA_OUT_R4 };
     uint16_t reg_in[4]  = { DATA_IN_R1,  DATA_IN_R2,  DATA_IN_R3,  DATA_IN_R4  };
 
     /* mov rX, rX */
-    printf ("0x%x - mov rX, rX\n", instruction);
+    printf ("0x%02x - mov rX, rX\n", instruction);
     for (int dst = 0; dst < 4; dst++)
     {
         for (int src = 0; src < 4; src++)
@@ -105,9 +104,79 @@ void generate_microcode ()
             instruction++;
         }
     }
+    /* ldi rX, 0xXX */
+    printf ("0x%02x - ldi rX, 0xXX\n", instruction);
+    for (int dst = 0; dst < 4; dst++)
+    {
+            READ_INSTRUCTION;
+            store_step(instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | reg_in[dst] | MISC_PC_COUNT);
+            store_step(instruction, 2, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_none | MISC_FINAL_STEP);  /* Can this be made faster by having a "count-and-final-step" option? */
+            instruction++;
+    }
 
     /* mov dh, rX */
-    printf ("0x%x - mov rX, rX\n", instruction);
+    printf ("0x%02x - mov dh, rX\n", instruction);
+    for (int src = 0; src < 4; src++)
+    {
+        READ_INSTRUCTION;
+        store_step(instruction, 1, ADDR_OUT_PC | ADDR_IN_none | reg_out[src] | DATA_IN_DH | MISC_FINAL_STEP);
+        instruction++;
+    }
+
+    /* mov dl, rX */
+    printf ("0x%02x - mov dl, rX\n", instruction);
+    for (int src = 0; src < 4; src++)
+    {
+        READ_INSTRUCTION;
+        store_step(instruction, 1, ADDR_OUT_PC | ADDR_IN_none | reg_out[src] | DATA_IN_DL | MISC_FINAL_STEP);
+        instruction++;
+    }
+
+    /* ldi hl, 0xXXXX */
+    printf ("0x%02x - ldi hl, 0xXXXX\n", instruction);
+    READ_INSTRUCTION;
+    store_step(instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DH | MISC_PC_COUNT);
+    store_step(instruction, 2, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DL | MISC_PC_COUNT);
+    store_step(instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    instruction++;
+
+    /* mov dc, hl */
+    printf ("0x%02x - mov dc, hl\n", instruction);
+    READ_INSTRUCTION;
+    store_step(instruction, 1, ADDR_OUT_DH_DL | ADDR_IN_DC | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    instruction++;
+
+    /* mov sp, hl */
+    printf ("0x%02x - mov sp, hl\n", instruction);
+    READ_INSTRUCTION;
+    store_step(instruction, 1, ADDR_OUT_DH_DL | ADDR_IN_SP | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    instruction++;
+
+#if 0 /* Can be implemented as a macro */
+    /* ldi dc, 0xXXXX */
+    printf ("0x%02x - ldi dc, 0xXXXX\n", instruction);
+    READ_INSTRUCTION;
+    store_step(instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DH | MISC_PC_COUNT);
+    store_step(instruction, 2, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DL | MISC_PC_COUNT);
+    store_step(instruction, 3, ADDR_OUT_DH_DL | ADDR_IN_DC | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    instruction++;
+
+    /* ldi sp, 0xXXXX */
+    printf ("0x%02x - ldi sp, 0xXXXX\n", instruction);
+    READ_INSTRUCTION;
+    store_step(instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DH | MISC_PC_COUNT);
+    store_step(instruction, 2, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DL | MISC_PC_COUNT);
+    store_step(instruction, 3, ADDR_OUT_DH_DL | ADDR_IN_SP | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    instruction++;
+#endif
+
+    /* unused */
+    printf ("0x%02x - unused\n", instruction);
+    READ_INSTRUCTION;
+    store_step(instruction, 1, ADDR_OUT_DH_DL | ADDR_IN_none | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    instruction++;
+
+
 }
 
 /*

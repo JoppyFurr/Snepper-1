@@ -69,23 +69,32 @@ Control Logic Outputs:
             6 → none
             7 → Instruction complete
 
+Assembler macros:
+
+        ldi     dc, 0xXXXX
+        ldi     sp, 0xXXXX
+
 256 instructions:
-  0 - 31   (32) : Move instructions
+  0 - 31   (32) : Move and load-immediate
  32 - 95   (64) : Memory instructions
  96 - ??        : Jump instructions
 112 - 127  (64) : I/O instructions
 128 - 255 (128) : ALU instructions
 
+
 --------
 
   0     mov/nop rX, rX
- 16     mov     dh, rX
- 20     mov     dl, rX
- 24     mov     sp, hl
- 25     mov     sp, 0xXXXX
- 26     cfg-set 0xXX
- 27     cfg-clr 0xXX
- 28-31  unused
+ 16     ldi     rX, 0xXX
+ 20     mov     dh, rX
+ 24     mov     dl, rX
+ 28     ldi     hl, 0xXXXX
+ 29     mov     dc, hl
+ 30     mov     sp, hl
+ 31     unused
+
+ ??     cfg-set 0xXX
+ ??     cfg-clr 0xXX
 
  32     load    rX, [dh, rX]
  48     store   rX, [dh, rX]
@@ -95,8 +104,6 @@ Control Logic Outputs:
  76     store-n rX
  80     push    rX
  84     pop     rX
- 88     loadi   rX, 0xXX
- 92     loadi   hl, 0xXXXX
  93-95  unused
 
  96     jmp     hl
