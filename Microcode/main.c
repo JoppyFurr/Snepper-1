@@ -73,12 +73,12 @@ typedef enum Misc_e {
 uint16_t microcode[8192] = { };
 
 /*
- * Store a single microcode step
+ * Store a single microcode step.
  */
 void store_step (uint8_t instruction, uint8_t step, uint16_t value )
 {
-    microcode [instruction << 4 | 0 | step] = value;
-    microcode [instruction << 4 | 8 | step] = value; /* For now, ignore the flag bit */
+    microcode [ (instruction << 4) | (0 << 3) | step] = value;
+    microcode [ (instruction << 4) | (1 << 3) | step] = value; /* For now, ignore the flag bit */
 }
 
 /* Note: Does the real ram work immediately? Or does it require a clock to take in the address? */
@@ -86,7 +86,7 @@ int instruction = 0;
 #define READ_INSTRUCTION store_step(instruction, 0, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_IR  | MISC_PC_COUNT)
 
 /*
- * Generate the microcode
+ * Generate the microcode.
  */
 void generate_microcode ()
 {
@@ -180,7 +180,7 @@ void generate_microcode ()
 }
 
 /*
- * Output in Digital format
+ * Output in Digital format.
  */
 int output_digital ()
 {
@@ -195,9 +195,38 @@ int output_digital ()
 
     fprintf (output, "v2.0 raw\n");
 
-    for (int i = 0; i < 256; i++)
+    for (int i = 0; i < (8 << 10); i++)
     {
         fprintf (output, "%x\n", microcode[i]);
+    }
+
+    fclose (output);
+}
+
+/*
+ * Output in format more useful for debugging.
+ */
+int output_debug ()
+{
+    FILE *output = NULL;
+
+    output = fopen ("microcode.debug", "w");
+    if (output == NULL)
+    {
+        fprintf (stderr, "Unable to open microcode.debug for output.\n");
+        return -1;
+    }
+
+    for (int i = 0; i < (8 << 10); i += 16)
+    {
+        fprintf (output, "%02x f=0: %04x %04x %04x %04x  %04x %04x %04x %04x\n",
+                 i >> 4,
+                 microcode[i +  0], microcode[i +  1], microcode[i +  2], microcode[i +  3],
+                 microcode[i +  4], microcode[i +  5], microcode[i +  6], microcode[i +  7]);
+        fprintf (output, "%02x f=1: %04x %04x %04x %04x  %04x %04x %04x %04x\n",
+                 i >> 4,
+                 microcode[i +  8], microcode[i +  9], microcode[i + 10], microcode[i + 11],
+                 microcode[i + 12], microcode[i + 13], microcode[i + 14], microcode[i + 15]);
     }
 
     fclose (output);
@@ -210,8 +239,14 @@ int main (void)
     generate_microcode ();
 
 
-    /* Write the microcode to a file */
+    /* Write the microcode to a file for the simulator */
     if (output_digital ())
+    {
+        rc = EXIT_FAILURE;
+    }
+
+    /* Write the microcode to a file for investigation */
+    if (output_debug ())
     {
         rc = EXIT_FAILURE;
     }

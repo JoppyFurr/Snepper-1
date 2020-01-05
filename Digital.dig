@@ -561,7 +561,7 @@ Bootstrap Plan:
         </entry>
         <entry>
           <string>Data</string>
-          <data>0,0,16,69,1,6,b</data>
+          <data>0,0,10,69,1,6,b</data>
         </entry>
       </elementAttributes>
       <pos x="-60" y="1980"/>
@@ -1158,7 +1158,7 @@ Consumer</string>
         </entry>
         <entry>
           <string>AddrBits</string>
-          <int>12</int>
+          <int>13</int>
         </entry>
         <entry>
           <string>Bits</string>
@@ -1923,11 +1923,11 @@ Consumer</string>
         </entry>
         <entry>
           <string>Input Splitting</string>
-          <string>3,1,8</string>
+          <string>3,1,8,1</string>
         </entry>
         <entry>
           <string>Output Splitting</string>
-          <string>12</string>
+          <string>13</string>
         </entry>
       </elementAttributes>
       <pos x="-240" y="3400"/>
@@ -2119,6 +2119,20 @@ Consumer</string>
       <elementAttributes/>
       <pos x="-340" y="3300"/>
     </visualElement>
+    <visualElement>
+      <elementName>Const</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>Value</string>
+          <long>0</long>
+        </entry>
+      </elementAttributes>
+      <pos x="-220" y="3340"/>
+    </visualElement>
   </visualElements>
   <wires>
     <wire>
@@ -2228,6 +2242,10 @@ Consumer</string>
     <wire>
       <p1 x="200" y="3340"/>
       <p2 x="240" y="3340"/>
+    </wire>
+    <wire>
+      <p1 x="-240" y="3340"/>
+      <p2 x="-220" y="3340"/>
     </wire>
     <wire>
       <p1 x="-100" y="1040"/>
