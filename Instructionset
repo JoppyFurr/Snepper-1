@@ -94,14 +94,14 @@ Assembler macros:
  1e     mov     sp, hl
  1f     unused
 
- 20     load    rX, [dh, rX]
- 30     store   rX, [dh, rX]
- 40     load    rX, [0xXXXX]
- 44     store   rX, [0xXXXX]
- 48     load-n  rX
- 4c     store-n rX
- 50     push    rX
- 54     pop     rX
+ 20     ld      rX, [dh, rX]
+ 30     st      [dh, rX], rX
+ 40     ld      rX, [0xXXXX]
+ 44     st      [0xXXXX], rX
+ 48     ld-n    rX <--
+ 4c     st-n    rX
+ 50     pop     rX
+ 54     push    rX
  58-5f  unused
 
  60     jmp     hl
