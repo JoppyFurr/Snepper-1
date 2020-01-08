@@ -85,6 +85,9 @@ void store_step (uint8_t instruction, uint8_t step, uint16_t value )
 int instruction = 0;
 #define READ_INSTRUCTION store_step(instruction, 0, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_IR  | MISC_PC_COUNT)
 
+/* TODO: A number of instructions have an empty final step, just so they can count. Perhaps final-step needs to be in addr-in or data-in? */
+#define EMPTY_FINAL_STEP (ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP)
+
 /*
  * Generate the microcode.
  */
@@ -111,7 +114,7 @@ void generate_microcode ()
     {
             READ_INSTRUCTION;
             store_step(instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | data_in_reg[dst] | MISC_PC_COUNT);
-            store_step(instruction, 2, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_none     | MISC_FINAL_STEP);  /* Can this be made faster by having a "count-and-final-step" option? Or having a duplicate final-step in another block? */
+            store_step(instruction, 2, EMPTY_FINAL_STEP);
             instruction++;
     }
 
@@ -138,7 +141,7 @@ void generate_microcode ()
     READ_INSTRUCTION;
     store_step(instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DH   | MISC_PC_COUNT);
     store_step(instruction, 2, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DL   | MISC_PC_COUNT);
-    store_step(instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_R1  | DATA_IN_none | MISC_FINAL_STEP);
+    store_step(instruction, 3, EMPTY_FINAL_STEP);
     instruction++;
 
     /* mov dc, hl */
@@ -153,31 +156,12 @@ void generate_microcode ()
     store_step(instruction, 1, ADDR_OUT_DH_DL | ADDR_IN_SP | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
-#if 0 /* Can be implemented as a macro */
-    /* ldi dc, 0xXXXX */
-    printf ("0x%02x - ldi dc, 0xXXXX\n", instruction);
-    READ_INSTRUCTION;
-    store_step(instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DH | MISC_PC_COUNT);
-    store_step(instruction, 2, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DL | MISC_PC_COUNT);
-    store_step(instruction, 3, ADDR_OUT_DH_DL | ADDR_IN_DC   | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
-    instruction++;
-
-    /* ldi sp, 0xXXXX */
-    printf ("0x%02x - ldi sp, 0xXXXX\n", instruction);
-    READ_INSTRUCTION;
-    store_step(instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DH | MISC_PC_COUNT);
-    store_step(instruction, 2, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DL | MISC_PC_COUNT);
-    store_step(instruction, 3, ADDR_OUT_DH_DL | ADDR_IN_SP   | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
-    instruction++;
-#endif
-
     /* unused */
     printf ("0x%02x - unused\n", instruction);
     READ_INSTRUCTION;
-    store_step(instruction, 1, ADDR_OUT_DH_DL | ADDR_IN_none | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    store_step(instruction, 1, EMPTY_FINAL_STEP);
     instruction++;
 
-    /* TODO: For now, DC is always updated when reading ram. A special non-destructive read could be implemented using only dh/dl if needed. */
 
     /* ld rX, [dh, rX] */
     printf ("0x%02x - ld rX, [dh, rX]\n", instruction);
@@ -187,7 +171,7 @@ void generate_microcode ()
         {
             READ_INSTRUCTION;
             store_step(instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | data_out_reg[src] | DATA_IN_DL       | MISC_none);
-            store_step(instruction, 2, ADDR_OUT_DH_DL | ADDR_IN_DC   | DATA_OUT_MEM      | data_in_reg[dst] | MISC_FINAL_STEP);
+            store_step(instruction, 2, ADDR_OUT_DH_DL | ADDR_IN_none | DATA_OUT_MEM      | data_in_reg[dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -200,7 +184,7 @@ void generate_microcode ()
         {
             READ_INSTRUCTION;
             store_step(instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | data_out_reg[dst] | DATA_IN_DL  | MISC_none);
-            store_step(instruction, 2, ADDR_OUT_DH_DL | ADDR_IN_DC   | data_out_reg[src] | DATA_IN_RAM | MISC_FINAL_STEP);
+            store_step(instruction, 2, ADDR_OUT_DH_DL | ADDR_IN_none | data_out_reg[src] | DATA_IN_RAM | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -212,7 +196,7 @@ void generate_microcode ()
             READ_INSTRUCTION;
             store_step(instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DH       | MISC_PC_COUNT);
             store_step(instruction, 2, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DL       | MISC_PC_COUNT);
-            store_step(instruction, 3, ADDR_OUT_DH_DL | ADDR_IN_DC   | DATA_OUT_MEM | data_in_reg[dst] | MISC_FINAL_STEP);
+            store_step(instruction, 3, ADDR_OUT_DH_DL | ADDR_IN_none | DATA_OUT_MEM | data_in_reg[dst] | MISC_FINAL_STEP);
             instruction++;
     }
 
@@ -223,44 +207,158 @@ void generate_microcode ()
             READ_INSTRUCTION;
             store_step(instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM      | DATA_IN_DH  | MISC_PC_COUNT);
             store_step(instruction, 2, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM      | DATA_IN_DL  | MISC_PC_COUNT);
-            store_step(instruction, 3, ADDR_OUT_DH_DL | ADDR_IN_DC   | data_out_reg[src] | DATA_IN_RAM | MISC_FINAL_STEP);
+            store_step(instruction, 3, ADDR_OUT_DH_DL | ADDR_IN_none | data_out_reg[src] | DATA_IN_RAM | MISC_FINAL_STEP);
             instruction++;
     }
 
-    /* Idea: A separate instruction for setting DC, and only ever using it with ld-n / st-n */
+    /* ld rX, dc */
+    printf ("0x%02x - ld rX, dc\n", instruction);
+    for (int dst = 0; dst < 4; dst++)
+    {
+            READ_INSTRUCTION;
+            store_step(instruction, 1, ADDR_OUT_DC    | ADDR_IN_none | DATA_OUT_MEM      | data_in_reg[dst] | MISC_DC_COUNT);
+            store_step(instruction, 2, EMPTY_FINAL_STEP);
+            instruction++;
+    }
 
-    /* TODO: ld-n rX */
-    printf ("0x%02x - ld-n rX\n", instruction);
+    printf ("0x%02x - st dc, rX\n", instruction);
     for (int src = 0; src < 4; src++)
     {
             READ_INSTRUCTION;
+            store_step(instruction, 1, ADDR_OUT_DC    | ADDR_IN_none | data_out_reg[src] | DATA_IN_RAM | MISC_DC_COUNT);
+            store_step(instruction, 2, EMPTY_FINAL_STEP);
             instruction++;
     }
 
-    /* TODO: st-n rX */
-    printf ("0x%02x - st-n rX\n", instruction);
-    for (int dst = 0; dst < 4; dst++)
-    {
-            READ_INSTRUCTION;
-            instruction++;
-    }
-
-    /* TODO: push rX */
-    printf ("0x%02x - push rX\n", instruction);
-    for (int dst = 0; dst < 4; dst++)
-    {
-            READ_INSTRUCTION;
-            instruction++;
-    }
-
-    /* TODO: pop rX */
+    /* pop rX */
     printf ("0x%02x - pop rX\n", instruction);
-    for (int src = 0; src < 4; src++)
+    for (int dst = 0; dst < 4; dst++)
     {
             READ_INSTRUCTION;
+            store_step(instruction, 1, ADDR_OUT_SP    | ADDR_IN_none | DATA_OUT_MEM | data_in_reg[dst] | MISC_SP_DEC);
+            store_step(instruction, 2, EMPTY_FINAL_STEP);
             instruction++;
     }
 
+    /* push rX */
+    printf ("0x%02x - push rX\n", instruction);
+    for (int src = 0; src < 4; src++)
+    {
+            READ_INSTRUCTION;
+            store_step(instruction, 1, ADDR_OUT_SP    | ADDR_IN_none | DATA_OUT_MEM      | DATA_IN_none | MISC_SP_INC);
+            store_step(instruction, 2, ADDR_OUT_SP    | ADDR_IN_none | data_out_reg[src] | DATA_IN_RAM  | MISC_FINAL_STEP);
+            instruction++;
+    }
+
+    /* unused */
+    printf ("0x%02x - unused\n", instruction);
+    while (instruction < 0x60)
+    {
+        READ_INSTRUCTION;
+        store_step(instruction, 1, EMPTY_FINAL_STEP);
+        instruction++;
+    }
+
+    /* TODO: jmp hl */
+    printf ("0x%02x - TODO: jmp hl\n", instruction);
+    READ_INSTRUCTION;
+    instruction++;
+
+    /* unused */
+    printf ("0x%02x - unused\n", instruction);
+    READ_INSTRUCTION;
+    store_step(instruction, 1, EMPTY_FINAL_STEP);
+    instruction++;
+
+    /* TODO: jmp-z hl */
+    READ_INSTRUCTION;
+    printf ("0x%02x - TODO: jmp-z hl\n", instruction);
+    instruction++;
+
+    /* TODO: jmp-neg hl */
+    printf ("0x%02x - TODO: jmp-neg hl\n", instruction);
+    READ_INSTRUCTION;
+    instruction++;
+
+    /* TODO: jmp-nz hl */
+    printf ("0x%02x - TODO: jmp-nz hl\n", instruction);
+    READ_INSTRUCTION;
+    instruction++;
+
+    /* TODO: jmp-pos hl */
+    printf ("0x%02x - TODO: jmp-pos hl\n", instruction);
+    READ_INSTRUCTION;
+    instruction++;
+
+    /* TODO: jmp 0xXXXX */
+    printf ("0x%02x - TODO: jmp 0xXXXX\n", instruction);
+    READ_INSTRUCTION;
+    instruction++;
+
+    /* unused */
+    printf ("0x%02x - unused\n", instruction);
+    READ_INSTRUCTION;
+    store_step(instruction, 1, EMPTY_FINAL_STEP);
+    instruction++;
+
+    /* TODO: jmp-z 0xXXXX */
+    printf ("0x%02x - TODO: jmp-z 0xXXXX\n", instruction);
+    READ_INSTRUCTION;
+    instruction++;
+
+    /* TODO: jmp-neg 0xXXXX */
+    printf ("0x%02x - TODO: jmp-neg 0xXXXX\n", instruction);
+    READ_INSTRUCTION;
+    instruction++;
+
+    /* TODO: jmp-nz 0xXXXX */
+    printf ("0x%02x - TODO: jmp-nz 0xXXXX\n", instruction);
+    READ_INSTRUCTION;
+    instruction++;
+
+    /* TODO: jmp-pos 0xXXXX */
+    printf ("0x%02x - TODO: jmp-pos 0xXXXX\n", instruction);
+    READ_INSTRUCTION;
+    instruction++;
+
+    /* TODO: call hl */
+    printf ("0x%02x - TODO: call hl\n", instruction);
+    READ_INSTRUCTION;
+    instruction++;
+
+    /* TODO: call 0xXXXX */
+    printf ("0x%02x - TODO: call 0xXXXX\n", instruction);
+    READ_INSTRUCTION;
+    instruction++;
+
+    /* TODO: ret */
+    printf ("0x%02x - TODO: ret\n", instruction);
+    READ_INSTRUCTION;
+    instruction++;
+
+    /* unused */
+    printf ("0x%02x - unused\n", instruction);
+    READ_INSTRUCTION;
+    store_step(instruction, 1, EMPTY_FINAL_STEP);
+    instruction++;
+
+    /* TODO: I/O Instructions */
+    printf ("0x%02x - TODO: I/O Instructions\n", instruction);
+    while (instruction < 0x80)
+    {
+        READ_INSTRUCTION;
+        store_step(instruction, 1, EMPTY_FINAL_STEP);
+        instruction++;
+    }
+
+    /* TODO: ALU Instructions */
+    printf ("0x%02x - TODO: ALU Instructions\n", instruction);
+    while (instruction < 0x100)
+    {
+        READ_INSTRUCTION;
+        store_step(instruction, 1, EMPTY_FINAL_STEP);
+        instruction++;
+    }
 }
 
 /*

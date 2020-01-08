@@ -70,7 +70,7 @@ Control Logic Outputs:
             6 → none
             7 → Instruction complete
 
-Assembler macros:
+Assembler macros to implement:
 
         ldi     dc, 0xXXXX
         ldi     sp, 0xXXXX
@@ -98,8 +98,8 @@ Assembler macros:
  30     st      [dh, rX], rX
  40     ld      rX, [0xXXXX]
  44     st      [0xXXXX], rX
- 48     ld-n    rX <--
- 4c     st-n    rX
+ 48     ld      rX, dc
+ 4c     st      dc, rX
  50     pop     rX
  54     push    rX
  58-5f  unused
