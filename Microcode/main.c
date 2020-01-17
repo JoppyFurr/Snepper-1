@@ -373,19 +373,33 @@ void generate_microcode ()
     READ_INSTRUCTION;
     instruction++;
 
-    /* TODO: call hl */
-    printf ("0x%02x - TODO: call hl\n", instruction);
+    /* call hl */
+    printf ("0x%02x - call hl\n", instruction);
     READ_INSTRUCTION;
+    store_step (instruction, 1, ADDR_OUT_PC    | ADDR_IN_AH_AL | DATA_OUT_R1 | DATA_IN_none | MISC_none);
+    store_step (instruction, 2, ADDR_OUT_SP    | ADDR_IN_none  | DATA_OUT_AH | DATA_IN_RAM  | MISC_SP_INC);
+    store_step (instruction, 3, ADDR_OUT_SP    | ADDR_IN_none  | DATA_OUT_AL | DATA_IN_RAM  | MISC_SP_INC);
+    store_step (instruction, 4, ADDR_OUT_DH_DL | ADDR_IN_PC    | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
-    /* TODO: call 0xXXXX */
-    printf ("0x%02x - TODO: call 0xXXXX\n", instruction);
+    /* call 0xXXXX */
+    printf ("0x%02x - call 0xXXXX\n", instruction);
     READ_INSTRUCTION;
+    store_step (instruction, 1, ADDR_OUT_PC    | ADDR_IN_none  | DATA_OUT_MEM | DATA_IN_DH   | MISC_PC_COUNT);
+    store_step (instruction, 2, ADDR_OUT_PC    | ADDR_IN_none  | DATA_OUT_MEM | DATA_IN_DL   | MISC_PC_COUNT);
+    store_step (instruction, 3, ADDR_OUT_PC    | ADDR_IN_AH_AL | DATA_OUT_R1  | DATA_IN_none | MISC_none);
+    store_step (instruction, 4, ADDR_OUT_SP    | ADDR_IN_none  | DATA_OUT_AH  | DATA_IN_RAM  | MISC_SP_INC);
+    store_step (instruction, 5, ADDR_OUT_SP    | ADDR_IN_none  | DATA_OUT_AL  | DATA_IN_RAM  | MISC_SP_INC);
+    store_step (instruction, 6, ADDR_OUT_DH_DL | ADDR_IN_PC    | DATA_OUT_R1  | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
-    /* TODO: ret */
-    printf ("0x%02x - TODO: ret\n", instruction);
+    /* ret */
+    printf ("0x%02x - ret\n", instruction);
     READ_INSTRUCTION;
+    store_step (instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_R1  | DATA_IN_none | MISC_SP_DEC);
+    store_step (instruction, 2, ADDR_OUT_SP    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DL   | MISC_SP_DEC);
+    store_step (instruction, 3, ADDR_OUT_SP    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DH   | MISC_none);
+    store_step (instruction, 4, ADDR_OUT_DH_DL | ADDR_IN_PC   | DATA_OUT_R1  | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
     /* unused */
@@ -408,75 +422,96 @@ void generate_microcode ()
         instruction++;
     }
 
-    /* TODO: add rX, rX */
-    printf ("0x%02x - TODO: add rX, rX\n", instruction);
+    /* add rX, rX */
+    printf ("0x%02x - add rX, rX\n", instruction);
     for (int dst = 0; dst < 4; dst++)
     {
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[dst] | DATA_IN_A1       | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_A2       | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_ADD      | data_in_reg[dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
 
-    /* TODO: addc rX, rX */
-    printf ("0x%02x - TODO: addc rX, rX\n", instruction);
+    /* addc rX, rX */
+    printf ("0x%02x - addc rX, rX\n", instruction);
     for (int dst = 0; dst < 4; dst++)
     {
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[dst] | DATA_IN_A1       | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_A2       | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_ADD_C    | data_in_reg[dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
 
-    /* TODO: sub rX, rX */
-    printf ("0x%02x - TODO: sub rX, rX\n", instruction);
+    /* sub rX, rX */
+    printf ("0x%02x - sub rX, rX\n", instruction);
     for (int dst = 0; dst < 4; dst++)
     {
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[dst] | DATA_IN_A1       | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_A2       | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_SUB      | data_in_reg[dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
-    /* TODO: subc rX, rX */
-    printf ("0x%02x - TODO: subc rX, rX\n", instruction);
+    /* subc rX, rX */
+    printf ("0x%02x - subc rX, rX\n", instruction);
     for (int dst = 0; dst < 4; dst++)
     {
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[dst] | DATA_IN_A1       | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_A2       | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_SUB_C    | data_in_reg[dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
-    /* TODO: and rX, rX */
-    printf ("0x%02x - TODO: and rX, rX\n", instruction);
+    /* and rX, rX */
+    printf ("0x%02x - and rX, rX\n", instruction);
     for (int dst = 0; dst < 4; dst++)
     {
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[dst] | DATA_IN_A1       | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_A2       | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_AND      | data_in_reg[dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
-    /* TODO: or rX, rX */
-    printf ("0x%02x - TODO: or rX, rX\n", instruction);
+    /* or rX, rX */
+    printf ("0x%02x - or rX, rX\n", instruction);
     for (int dst = 0; dst < 4; dst++)
     {
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[dst] | DATA_IN_A1       | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_A2       | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_OR       | data_in_reg[dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
-    /* TODO: xor rX, rX */
-    printf ("0x%02x - TODO: xor rX, rX\n", instruction);
+    /* xor rX, rX */
+    printf ("0x%02x - xor rX, rX\n", instruction);
     for (int dst = 0; dst < 4; dst++)
     {
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[dst] | DATA_IN_A1       | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_A2       | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_XOR       | data_in_reg[dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }

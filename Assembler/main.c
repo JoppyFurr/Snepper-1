@@ -281,7 +281,7 @@ typedef enum Instruction_e {
 /*
  * Test program.
  */
-uint8_t test_program[] =
+uint8_t test_program_deadbeef[] =
 {
     /* 0x0000 */ LDI_R1_XX, 0xde,
     /* 0x0002 */ TEMP_OUTPUT_R1,
@@ -293,6 +293,46 @@ uint8_t test_program[] =
     /* 0x000b */ TEMP_OUTPUT_R1,
     /* 0x000c */ JMP_XXXX, 0x00, 0x00,
     /* 0x0010 */ NOP,
+};
+
+uint8_t test_program_count[] =
+{
+    /* 0x0000 */ LDI_R1_XX, 0x00,
+    /* 0x0002 */ LDI_R2_XX, 0x01,
+    /* 0x0004 */ SUB_R1_R2,
+    /* 0x0005 */ TEMP_OUTPUT_R1,
+    /* 0x0006 */ JMP_XXXX, 0x00, 0x04,
+    /* 0x0009 */ NOP,
+};
+
+uint8_t test_program_call[] =
+{
+    /* Set the stack pointer into RAM */
+    /* 0x0000 */ LDI_HL_XXXX, 0x20, 0x00,
+    /* 0x0003 */ MOV_SP_HL,
+
+    /* Initialise registers */
+    /* 0x0004 */ LDI_R1_XX, 0x00,
+    /* 0x0006 */ LDI_R2_XX, 0x01,
+
+    /* Main loop */
+    /* 0x0008 */ ADD_R1_R2,
+    /* 0x0009 */ CALL_XXXX, 0x00, 0x18,
+    /* 0x000c */ JMP_XXXX, 0x00, 0x08,
+
+    /* 0x000f */ NOP,
+    /* 0x0010 */ NOP,
+    /* 0x0011 */ NOP,
+    /* 0x0012 */ NOP,
+    /* 0x0013 */ NOP,
+    /* 0x0014 */ NOP,
+    /* 0x0015 */ NOP,
+    /* 0x0016 */ NOP,
+    /* 0x0017 */ NOP,
+
+    /* Output function */
+    /* 0x0018 */ TEMP_OUTPUT_R1,
+    /* 0x0019 */ RET,
 };
 
 /*
@@ -311,9 +351,9 @@ int output_digital ()
 
     fprintf (output, "v2.0 raw\n");
 
-    for (int i = 0; i < sizeof (test_program); i++)
+    for (int i = 0; i < sizeof (test_program_call); i++)
     {
-        fprintf (output, "%x\n", test_program[i]);
+        fprintf (output, "%x\n", test_program_call[i]);
     }
 
     fclose (output);
