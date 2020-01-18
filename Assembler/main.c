@@ -1,7 +1,11 @@
+/*
+ * Assembler for the Snepper-1.
+ */
 
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef enum Instruction_e {
 
@@ -278,62 +282,7 @@ typedef enum Instruction_e {
 
 #define NOP MOV_R1_R1
 
-/*
- * Test program.
- */
-uint8_t test_program_deadbeef[] =
-{
-    /* 0x0000 */ LDI_R1_XX, 0xde,
-    /* 0x0002 */ TEMP_OUTPUT_R1,
-    /* 0x0003 */ LDI_R1_XX, 0xad,
-    /* 0x0005 */ TEMP_OUTPUT_R1,
-    /* 0x0006 */ LDI_R1_XX, 0xbe,
-    /* 0x0008 */ TEMP_OUTPUT_R1,
-    /* 0x0009 */ LDI_R1_XX, 0xef,
-    /* 0x000b */ TEMP_OUTPUT_R1,
-    /* 0x000c */ JMP_XXXX, 0x00, 0x00,
-    /* 0x0010 */ NOP,
-};
-
-uint8_t test_program_count[] =
-{
-    /* 0x0000 */ LDI_R1_XX, 0x00,
-    /* 0x0002 */ LDI_R2_XX, 0x01,
-    /* 0x0004 */ SUB_R1_R2,
-    /* 0x0005 */ TEMP_OUTPUT_R1,
-    /* 0x0006 */ JMP_XXXX, 0x00, 0x04,
-    /* 0x0009 */ NOP,
-};
-
-uint8_t test_program_call[] =
-{
-    /* Set the stack pointer into RAM */
-    /* 0x0000 */ LDI_HL_XXXX, 0x20, 0x00,
-    /* 0x0003 */ MOV_SP_HL,
-
-    /* Initialise registers */
-    /* 0x0004 */ LDI_R1_XX, 0x00,
-    /* 0x0006 */ LDI_R2_XX, 0x01,
-
-    /* Main loop */
-    /* 0x0008 */ ADD_R1_R2,
-    /* 0x0009 */ CALL_XXXX, 0x00, 0x18,
-    /* 0x000c */ JMP_XXXX, 0x00, 0x08,
-
-    /* 0x000f */ NOP,
-    /* 0x0010 */ NOP,
-    /* 0x0011 */ NOP,
-    /* 0x0012 */ NOP,
-    /* 0x0013 */ NOP,
-    /* 0x0014 */ NOP,
-    /* 0x0015 */ NOP,
-    /* 0x0016 */ NOP,
-    /* 0x0017 */ NOP,
-
-    /* Output function */
-    /* 0x0018 */ TEMP_OUTPUT_R1,
-    /* 0x0019 */ RET,
-};
+uint8_t rom [8192] = { 0 };
 
 /*
  * Output in Digital format.
@@ -351,17 +300,72 @@ int output_digital ()
 
     fprintf (output, "v2.0 raw\n");
 
-    for (int i = 0; i < sizeof (test_program_call); i++)
+    for (int i = 0; i < sizeof (rom); i++)
     {
-        fprintf (output, "%x\n", test_program_call[i]);
+        fprintf (output, "%x\n", rom [i]);
     }
 
     fclose (output);
 }
 
-int main (void)
+int parse_asm (FILE *source)
+{
+    uint16_t address = 0;
+    char buffer [80] = { '\0' };
+    char *endptr = NULL;
+    int rc = 0;
+
+    while (fscanf (source, "%s", buffer) != EOF)
+    {
+        /* Comment */
+        if (strcmp ("/*", buffer) == 0)
+        {
+            do
+            {
+                if (fscanf (source, "%s", buffer) == EOF)
+                {
+                    fprintf (stderr, "Error: Unterminated comment.\n");
+                    return -1;
+                }
+            } while (strcmp ("*/", buffer) != 0);
+        }
+
+        /* Offset */
+        if (strncmp (".", buffer, 1) == 0)
+        {
+            address = strtoul (& buffer [1], & endptr, 16);
+            if (endptr == & buffer [1])
+            {
+                fprintf (stderr, "Error: Unable to parse address \"%s\".\n", buffer);
+                return -1;
+            }
+        }
+    }
+}
+
+int main (int argc, char **argv)
 {
     int rc = EXIT_SUCCESS;
+    FILE *source = NULL;
+
+    if (argc != 2)
+    {
+        fprintf (stderr, "Usage: %s <source.asm>\n", argv [0]);
+        return EXIT_FAILURE;
+    }
+
+    source = fopen (argv [1], "r");
+
+    if (source == NULL)
+    {
+        fprintf (stderr, "Error: Unable to open %s.\n", argv [1]);
+        return EXIT_FAILURE;
+    }
+
+    if (parse_asm (source) == -1)
+    {
+        return EXIT_FAILURE;
+    }
 
     /* Write the rom to a file for the simulator */
     if (output_digital ())
