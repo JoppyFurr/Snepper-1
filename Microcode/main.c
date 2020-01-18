@@ -71,15 +71,15 @@ typedef enum Misc_e {
     MISC_FINAL_STEP = 0x0007,
 } Misc;
 
-uint16_t microcode[8192] = { };
+uint16_t microcode [8192] = { };
 
 /*
  * Store an unconditional microcode step.
  */
 void store_step (uint8_t instruction, uint8_t step, uint16_t value )
 {
-    microcode [ (instruction << 4) | (0 << 3) | step] = value;
-    microcode [ (instruction << 4) | (1 << 3) | step] = value;
+    microcode [(instruction << 4) | (0 << 3) | step] = value;
+    microcode [(instruction << 4) | (1 << 3) | step] = value;
 }
 
 /*
@@ -89,11 +89,11 @@ void store_step_conditional (uint8_t instruction, bool condition, uint8_t step, 
 {
     if (condition == false)
     {
-        microcode [ (instruction << 4) | (0 << 3) | step] = value;
+        microcode [(instruction << 4) | (0 << 3) | step] = value;
     }
     else
     {
-        microcode [ (instruction << 4) | (1 << 3) | step] = value;
+        microcode [(instruction << 4) | (1 << 3) | step] = value;
     }
 }
 
@@ -109,8 +109,8 @@ int instruction = 0;
  */
 void generate_microcode ()
 {
-    uint16_t data_out_reg[4] = { DATA_OUT_R1, DATA_OUT_R2, DATA_OUT_R3, DATA_OUT_R4 };
-    uint16_t data_in_reg[4]  = { DATA_IN_R1,  DATA_IN_R2,  DATA_IN_R3,  DATA_IN_R4  };
+    uint16_t data_out_reg [4] = { DATA_OUT_R1, DATA_OUT_R2, DATA_OUT_R3, DATA_OUT_R4 };
+    uint16_t data_in_reg  [4] = { DATA_IN_R1,  DATA_IN_R2,  DATA_IN_R3,  DATA_IN_R4  };
 
     /* mov rX, rX */
     printf ("0x%02x - mov rX, rX\n", instruction);
@@ -119,7 +119,7 @@ void generate_microcode ()
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | data_in_reg[dst] | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -129,7 +129,7 @@ void generate_microcode ()
     for (int dst = 0; dst < 4; dst++)
     {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | data_in_reg[dst] | MISC_PC_COUNT);
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | data_in_reg [dst] | MISC_PC_COUNT);
             store_step (instruction, 2, EMPTY_FINAL_STEP);
             instruction++;
     }
@@ -139,7 +139,7 @@ void generate_microcode ()
     for (int src = 0; src < 4; src++)
     {
         READ_INSTRUCTION;
-        store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_DH | MISC_FINAL_STEP);
+        store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | DATA_IN_DH | MISC_FINAL_STEP);
         instruction++;
     }
 
@@ -148,7 +148,7 @@ void generate_microcode ()
     for (int src = 0; src < 4; src++)
     {
         READ_INSTRUCTION;
-        store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_DL | MISC_FINAL_STEP);
+        store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | DATA_IN_DL | MISC_FINAL_STEP);
         instruction++;
     }
 
@@ -186,8 +186,8 @@ void generate_microcode ()
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | data_out_reg[src] | DATA_IN_DL       | MISC_none);
-            store_step (instruction, 2, ADDR_OUT_DH_DL | ADDR_IN_none | DATA_OUT_MEM      | data_in_reg[dst] | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | data_out_reg [src] | DATA_IN_DL        | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_DH_DL | ADDR_IN_none | DATA_OUT_MEM       | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -199,8 +199,8 @@ void generate_microcode ()
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | data_out_reg[dst] | DATA_IN_DL  | MISC_none);
-            store_step (instruction, 2, ADDR_OUT_DH_DL | ADDR_IN_none | data_out_reg[src] | DATA_IN_RAM | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | data_out_reg [dst] | DATA_IN_DL  | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_DH_DL | ADDR_IN_none | data_out_reg [src] | DATA_IN_RAM | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -210,9 +210,9 @@ void generate_microcode ()
     for (int dst = 0; dst < 4; dst++)
     {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DH       | MISC_PC_COUNT);
-            store_step (instruction, 2, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DL       | MISC_PC_COUNT);
-            store_step (instruction, 3, ADDR_OUT_DH_DL | ADDR_IN_none | DATA_OUT_MEM | data_in_reg[dst] | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DH        | MISC_PC_COUNT);
+            store_step (instruction, 2, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DL        | MISC_PC_COUNT);
+            store_step (instruction, 3, ADDR_OUT_DH_DL | ADDR_IN_none | DATA_OUT_MEM | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
     }
 
@@ -221,9 +221,9 @@ void generate_microcode ()
     for (int src = 0; src < 4; src++)
     {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM      | DATA_IN_DH  | MISC_PC_COUNT);
-            store_step (instruction, 2, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM      | DATA_IN_DL  | MISC_PC_COUNT);
-            store_step (instruction, 3, ADDR_OUT_DH_DL | ADDR_IN_none | data_out_reg[src] | DATA_IN_RAM | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM       | DATA_IN_DH  | MISC_PC_COUNT);
+            store_step (instruction, 2, ADDR_OUT_PC    | ADDR_IN_none | DATA_OUT_MEM       | DATA_IN_DL  | MISC_PC_COUNT);
+            store_step (instruction, 3, ADDR_OUT_DH_DL | ADDR_IN_none | data_out_reg [src] | DATA_IN_RAM | MISC_FINAL_STEP);
             instruction++;
     }
 
@@ -232,7 +232,7 @@ void generate_microcode ()
     for (int dst = 0; dst < 4; dst++)
     {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_DC | ADDR_IN_none | DATA_OUT_MEM      | data_in_reg[dst] | MISC_DC_COUNT);
+            store_step (instruction, 1, ADDR_OUT_DC | ADDR_IN_none | DATA_OUT_MEM | data_in_reg [dst] | MISC_DC_COUNT);
             store_step (instruction, 2, EMPTY_FINAL_STEP);
             instruction++;
     }
@@ -241,7 +241,7 @@ void generate_microcode ()
     for (int src = 0; src < 4; src++)
     {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_DC | ADDR_IN_none | data_out_reg[src] | DATA_IN_RAM | MISC_DC_COUNT);
+            store_step (instruction, 1, ADDR_OUT_DC | ADDR_IN_none | data_out_reg [src] | DATA_IN_RAM | MISC_DC_COUNT);
             store_step (instruction, 2, EMPTY_FINAL_STEP);
             instruction++;
     }
@@ -251,7 +251,7 @@ void generate_microcode ()
     for (int dst = 0; dst < 4; dst++)
     {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM | data_in_reg[dst] | MISC_SP_DEC);
+            store_step (instruction, 1, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM | data_in_reg [dst] | MISC_SP_DEC);
             store_step (instruction, 2, EMPTY_FINAL_STEP);
             instruction++;
     }
@@ -261,8 +261,8 @@ void generate_microcode ()
     for (int src = 0; src < 4; src++)
     {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM      | DATA_IN_none | MISC_SP_INC);
-            store_step (instruction, 2, ADDR_OUT_SP | ADDR_IN_none | data_out_reg[src] | DATA_IN_RAM  | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM       | DATA_IN_none | MISC_SP_INC);
+            store_step (instruction, 2, ADDR_OUT_SP | ADDR_IN_none | data_out_reg [src] | DATA_IN_RAM  | MISC_FINAL_STEP);
             instruction++;
     }
 
@@ -429,9 +429,9 @@ void generate_microcode ()
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[dst] | DATA_IN_A1       | MISC_none);
-            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_A2       | MISC_none);
-            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_ADD      | data_in_reg[dst] | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [dst] | DATA_IN_A1        | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | DATA_IN_A2        | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_ADD       | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -443,9 +443,9 @@ void generate_microcode ()
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[dst] | DATA_IN_A1       | MISC_none);
-            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_A2       | MISC_none);
-            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_ADD_C    | data_in_reg[dst] | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [dst] | DATA_IN_A1        | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | DATA_IN_A2        | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_ADD_C     | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -457,9 +457,9 @@ void generate_microcode ()
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[dst] | DATA_IN_A1       | MISC_none);
-            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_A2       | MISC_none);
-            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_SUB      | data_in_reg[dst] | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [dst] | DATA_IN_A1        | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | DATA_IN_A2        | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_SUB       | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -470,9 +470,9 @@ void generate_microcode ()
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[dst] | DATA_IN_A1       | MISC_none);
-            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_A2       | MISC_none);
-            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_SUB_C    | data_in_reg[dst] | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [dst] | DATA_IN_A1        | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | DATA_IN_A2        | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_SUB_C     | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -483,9 +483,9 @@ void generate_microcode ()
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[dst] | DATA_IN_A1       | MISC_none);
-            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_A2       | MISC_none);
-            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_AND      | data_in_reg[dst] | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [dst] | DATA_IN_A1        | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | DATA_IN_A2        | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_AND       | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -496,9 +496,9 @@ void generate_microcode ()
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[dst] | DATA_IN_A1       | MISC_none);
-            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_A2       | MISC_none);
-            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_OR       | data_in_reg[dst] | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [dst] | DATA_IN_A1        | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | DATA_IN_A2        | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_OR        | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -509,9 +509,9 @@ void generate_microcode ()
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
-            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[dst] | DATA_IN_A1       | MISC_none);
-            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg[src] | DATA_IN_A2       | MISC_none);
-            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_XOR       | data_in_reg[dst] | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [dst] | DATA_IN_A1        | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | DATA_IN_A2        | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_XOR       | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -555,7 +555,7 @@ int output_digital ()
 
     for (int i = 0; i < (8 << 10); i++)
     {
-        fprintf (output, "%x\n", microcode[i]);
+        fprintf (output, "%x\n", microcode [i]);
     }
 
     fclose (output);
@@ -579,12 +579,12 @@ int output_debug ()
     {
         fprintf (output, "%02x f=0: %04x %04x %04x %04x  %04x %04x %04x %04x\n",
                  i >> 4,
-                 microcode[i +  0], microcode[i +  1], microcode[i +  2], microcode[i +  3],
-                 microcode[i +  4], microcode[i +  5], microcode[i +  6], microcode[i +  7]);
+                 microcode [i +  0], microcode [i +  1], microcode [i +  2], microcode [i +  3],
+                 microcode [i +  4], microcode [i +  5], microcode [i +  6], microcode [i +  7]);
         fprintf (output, "%02x f=1: %04x %04x %04x %04x  %04x %04x %04x %04x\n",
                  i >> 4,
-                 microcode[i +  8], microcode[i +  9], microcode[i + 10], microcode[i + 11],
-                 microcode[i + 12], microcode[i + 13], microcode[i + 14], microcode[i + 15]);
+                 microcode [i +  8], microcode [i +  9], microcode [i + 10], microcode [i + 11],
+                 microcode [i + 12], microcode [i + 13], microcode [i + 14], microcode [i + 15]);
     }
 
     fclose (output);
