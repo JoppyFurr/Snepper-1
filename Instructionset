@@ -75,6 +75,10 @@ Assembler macros to implement:
         ldi     dc, 0xXXXX
         ldi     sp, 0xXXXX
 
+Features that may be useful:
+        mov     rX, ah/al
+        I/O block transfer
+
 256 instructions:
  00-1f  (32) : Move and load-immediate
  20-5f  (64) : Memory instructions

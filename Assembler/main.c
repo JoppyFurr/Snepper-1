@@ -308,12 +308,72 @@ int output_digital ()
     fclose (output);
 }
 
+#define SCAN_NEXT_TOKEN() \
+do \
+{ \
+    if (fscanf (source, "%s", buffer) == EOF) \
+    { \
+        fprintf (stderr, "Error: Unexpected end of input.\n"); \
+        return -1; \
+    } \
+} while (0)
+
+#define PARSE_INT(value, ptr) \
+do \
+{ \
+    char *endptr = NULL; \
+    value = strtoul (ptr, & endptr, 0); \
+    if (endptr == ptr) \
+    { \
+        fprintf (stderr, "Error: Unexpected input \"%s\". Expected integer.\n", ptr); \
+        return -1; \
+    } \
+} while (0)
+
+#define PARSE_HEX_INT(value, ptr) \
+do \
+{ \
+    char *endptr = NULL; \
+    value = strtoul (ptr, & endptr, 16); \
+    if (endptr == ptr) \
+    { \
+        fprintf (stderr, "Error: Unexpected input \"%s\". Expected hex integer.\n", ptr); \
+        return -1; \
+    } \
+} while (0)
+
+#define PARSE_REG(reg, ptr) \
+do \
+{ \
+    ptr [2] = '\0'; \
+    reg = strtoul (& ptr [1], NULL, 16) - 1; \
+    if (reg >= 4) \
+    { \
+        fprintf (stderr, "Error: Invalid register \"%s\".\n", ptr); \
+        return -1; \
+    } \
+} while (0)
+
+#define CONFIRM_MATCH(expected, input) \
+do \
+{ \
+    if (strcmp (expected, input) != 0) \
+    { \
+        fprintf (stderr, "Error: Unexpected input \"%s\". Expected \"%s\"\n", input, expected); \
+        return -1; \
+    } \
+} while (0)
+
+
+
 int parse_asm (FILE *source)
 {
     uint16_t address = 0;
+
     char buffer [80] = { '\0' };
-    char *endptr = NULL;
-    int rc = 0;
+
+    uint8_t dst;
+    uint8_t src;
 
     while (fscanf (source, "%s", buffer) != EOF)
     {
@@ -322,24 +382,79 @@ int parse_asm (FILE *source)
         {
             do
             {
-                if (fscanf (source, "%s", buffer) == EOF)
-                {
-                    fprintf (stderr, "Error: Unterminated comment.\n");
-                    return -1;
-                }
+                SCAN_NEXT_TOKEN ();
             } while (strcmp ("*/", buffer) != 0);
+
+            continue;
         }
 
         /* Offset */
         if (strncmp (".", buffer, 1) == 0)
         {
-            address = strtoul (& buffer [1], & endptr, 16);
-            if (endptr == & buffer [1])
-            {
-                fprintf (stderr, "Error: Unable to parse address \"%s\".\n", buffer);
-                return -1;
-            }
+            PARSE_HEX_INT (address, & buffer [1]);
+
+            continue;
         }
+
+        /* mov */
+        if (strcmp ("mov", buffer) == 0)
+        {
+            SCAN_NEXT_TOKEN ();
+
+            /* mov rX, rX */
+            if (strncmp ("r", buffer, 1) == 0)
+            {
+                PARSE_REG (dst, buffer);
+                SCAN_NEXT_TOKEN ();
+                PARSE_REG (src, buffer);
+                rom [address++] = MOV_R1_R1 + (dst << 2) + (src << 0);
+            }
+
+            /* mov dh, rX */
+            else if (strncmp ("dh", buffer, 2) == 0)
+            {
+                SCAN_NEXT_TOKEN ();
+                PARSE_REG (src, buffer);
+                rom [address++] = MOV_DH_R1 + (src << 0);
+            }
+
+            /* mov dl, rX */
+            else if (strncmp ("dl", buffer, 2) == 0)
+            {
+                SCAN_NEXT_TOKEN ();
+                PARSE_REG (src, buffer);
+                rom [address++] = MOV_DL_R1 + (src << 0);
+            }
+
+            /* mov dc, hl */
+            else if (strncmp ("dc", buffer, 2) == 0)
+            {
+                SCAN_NEXT_TOKEN ();
+                CONFIRM_MATCH ("hl", buffer);
+                rom [address++] = MOV_DC_HL;
+            }
+
+            /* mov sp, hl */
+            else if (strncmp ("sp", buffer, 2) == 0)
+            {
+                SCAN_NEXT_TOKEN ();
+                CONFIRM_MATCH ("hl", buffer);
+                rom [address++] = MOV_SP_HL;
+            }
+
+            continue;
+        }
+
+        /* ldi */
+        /* ld */
+        /* st */
+        /* pop */
+        /* push */
+        /* jmp */
+        /* call */
+        /* ret */
+
+        fprintf (stderr, "Warning: Unexpected input \"%s\".\n", buffer);
     }
 }
 
