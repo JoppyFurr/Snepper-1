@@ -32,7 +32,7 @@ int output_digital ()
     output = fopen ("rom.hex", "w");
     if (output == NULL)
     {
-        fprintf (stderr, "Unable to open rom.hex for output.\n");
+        fprintf (stderr, "[%s] Unable to open rom.hex for output.\n", __func__);
         return -1;
     }
 
@@ -63,7 +63,7 @@ int label_add (char *name)
 {
     if (label_exists (name))
     {
-        fprintf (stderr, "Error: Label \"%s\" already exists.\n", name);
+        fprintf (stderr, "[%s] Error: Label \"%s\" already exists.\n", __func__, name);
         return -1;
     }
 
@@ -74,6 +74,30 @@ int label_add (char *name)
     labels [label_count]->references = NULL;
     labels [label_count]->reference_count = 0;
     label_count++;
+
+    return 0;
+}
+
+int label_add_reference (char *name, uint16_t reference)
+{
+    Label *l = NULL;
+
+    for (int i = 0; i < label_count; i++)
+    {
+        if (strcmp (labels [i]->name, name) == 0)
+        {
+            l = labels [i];
+        }
+    }
+    if (l == NULL)
+    {
+        fprintf (stderr, "[%s] Error: label not found.\n", __func__);
+        return -1;
+    }
+
+    l->references = realloc (l->references, (l->reference_count + 1) * sizeof (uint16_t));
+    l->references [l->reference_count] = reference;
+    l->reference_count++;
 
     return 0;
 }
@@ -89,6 +113,7 @@ int label_set_address (char *name, uint16_t address)
         }
     }
 
+    fprintf (stderr, "[%s] Error: label not found.\n", __func__);
     return -1;
 }
 
@@ -123,6 +148,24 @@ do \
     { \
         fprintf (stderr, "Error: Unexpected input \"%s\". Expected hex integer.\n", ptr); \
         return -1; \
+    } \
+} while (0)
+
+#define PARSE_HEX_INT_OR_LABEL(value, ptr) \
+do \
+{\
+    if (label_exists (ptr)) \
+    { \
+        if (label_add_reference (buffer, address) == -1) \
+        { \
+            fprintf (stderr, "Error: Failed to add reference to label.\n"); \
+            return -1; \
+        } \
+        value = 0;\
+    } \
+    else \
+    { \
+        PARSE_HEX_INT (value, ptr); \
     } \
 } while (0)
 
@@ -197,6 +240,7 @@ int parse_asm (FILE *source)
             buffer [strlen (buffer) - 1] = '\0';
             if (label_set_address (buffer, address) == -1)
             {
+                fprintf (stderr, "[%s] Error: Failed to set label address.\n", __func__); \
                 return -1;
             }
         }
@@ -266,11 +310,9 @@ int parse_asm (FILE *source)
             /* ldi hl, 0xXXXX */
             else if (strncmp ("hl", buffer, 2) == 0)
             {
-                uint16_t value = 0;
-
-                SCAN_NEXT_TOKEN ();
-                PARSE_INT (value, buffer);
                 rom [address++] = LDI_HL_XXXX;
+                SCAN_NEXT_TOKEN ();
+                PARSE_HEX_INT_OR_LABEL (value, buffer);
                 rom [address++] = (uint8_t) (value >> 8);
                 rom [address++] = (uint8_t) value;
             }
@@ -306,9 +348,12 @@ int parse_asm (FILE *source)
                 /* ld rX, [0xXXXX] */
                 else if (strncmp ("[", buffer, 1) == 0)
                 {
-                    SCAN_NEXT_TOKEN ();
-                    PARSE_INT (value, buffer);
                     rom [address++] = LD_R1_XXXX + (dst << 0);
+                    SCAN_NEXT_TOKEN ();
+                    /* TODO - This won't understand the brackets */
+                    PARSE_HEX_INT_OR_LABEL (value, buffer);
+                    fprintf (stderr, "Error: Implementation is WIP.\n"); \
+                    return -1;
                     rom [address++] = (uint8_t) (value >> 8);
                     rom [address++] = (uint8_t) value;
                 }
@@ -347,7 +392,10 @@ int parse_asm (FILE *source)
             /* st [0xXXXX], rX */
             else if (strncmp ("[", buffer, 1) == 0)
             {
-                PARSE_INT (value, & buffer [1]);
+                /* TODO - This won't understand the brackets */
+                PARSE_HEX_INT_OR_LABEL (value, & buffer [1]);
+                fprintf (stderr, "Error: Implementation is WIP.\n"); \
+                return -1;
                 SCAN_NEXT_TOKEN ();
                 PARSE_REG (src, buffer);
                 rom [address++] = ST_XXXX_R1+ (src << 0);
@@ -389,8 +437,8 @@ int parse_asm (FILE *source)
             /* jmp 0xXXXX */
             else
             {
-                PARSE_INT (value, buffer);
                 rom [address++] = JMP_XXXX;
+                PARSE_HEX_INT_OR_LABEL (value, buffer);
                 rom [address++] = (uint8_t) (value >> 8);
                 rom [address++] = (uint8_t) value;
             }
@@ -407,8 +455,8 @@ int parse_asm (FILE *source)
             /* jmp-z 0xXXXX */
             else
             {
-                PARSE_INT (value, buffer);
                 rom [address++] = JMP_Z_XXXX;
+                PARSE_HEX_INT_OR_LABEL (value, buffer);
                 rom [address++] = (uint8_t) (value >> 8);
                 rom [address++] = (uint8_t) value;
             }
@@ -425,8 +473,8 @@ int parse_asm (FILE *source)
             /* jmp-nz 0xXXXX */
             else
             {
-                PARSE_INT (value, buffer);
                 rom [address++] = JMP_NZ_XXXX;
+                PARSE_HEX_INT_OR_LABEL (value, buffer);
                 rom [address++] = (uint8_t) (value >> 8);
                 rom [address++] = (uint8_t) value;
             }
@@ -443,8 +491,8 @@ int parse_asm (FILE *source)
             /* jmp-neg 0xXXXX */
             else
             {
-                PARSE_INT (value, buffer);
                 rom [address++] = JMP_NEG_XXXX;
+                PARSE_HEX_INT_OR_LABEL (value, buffer);
                 rom [address++] = (uint8_t) (value >> 8);
                 rom [address++] = (uint8_t) value;
             }
@@ -461,8 +509,8 @@ int parse_asm (FILE *source)
             /* jmp-pos 0xXXXX */
             else
             {
-                PARSE_INT (value, buffer);
                 rom [address++] = JMP_POS_XXXX;
+                PARSE_HEX_INT_OR_LABEL (value, buffer);
                 rom [address++] = (uint8_t) (value >> 8);
                 rom [address++] = (uint8_t) value;
             }
@@ -481,8 +529,8 @@ int parse_asm (FILE *source)
             /* call 0xXXXX */
             else
             {
-                PARSE_INT (value, buffer);
                 rom [address++] = CALL_XXXX;
+                PARSE_HEX_INT_OR_LABEL (value, buffer);
                 rom [address++] = (uint8_t) (value >> 8);
                 rom [address++] = (uint8_t) value;
             }
@@ -496,6 +544,20 @@ int parse_asm (FILE *source)
 
         /* TODO: I/O */
         /* TODO cfg-set / cfg-clr */
+
+        else if (strcmp ("output", buffer) == 0) /* Temporary */
+        {
+            SCAN_NEXT_TOKEN ();
+            if (strcmp ("r1", buffer) == 0)
+            {
+                rom [address++] = TEMP_OUTPUT_R1;
+            }
+            else
+            {
+                fprintf (stderr, "Error: Only \"r1\" is valid.\n"); \
+                return -1;
+            }
+        }
 
         /* add */
         else if (strcmp ("add", buffer) == 0)
@@ -572,12 +634,11 @@ int parse_asm (FILE *source)
 
         else
         {
-#if 0
             UNEXPECTED (buffer);
-#endif
-            fprintf (stderr, "Warning: Unexpected input \"%s\".\n", buffer);
         }
     }
+
+    return 0;
 }
 
 int find_labels (FILE *source)
@@ -594,9 +655,9 @@ int find_labels (FILE *source)
         if (name[0] != '\0' && name [strlen (name) - 1] == ':')
         {
             name [strlen (name) - 1] = '\0';
-            printf ("Found label: \"%s\".\n", name);
             if (label_add (name) == -1)
             {
+                fprintf (stderr, "[%s] Error: Failed to add label.\n", __func__); \
                 return -1;
             }
         }
@@ -611,7 +672,16 @@ int find_labels (FILE *source)
 
 int substitute_labels (void)
 {
-    return -1;
+    for (int i = 0; i < label_count; i++)
+    {
+        for (int r = 0; r < labels [i]->reference_count; r++)
+        {
+            rom [labels [i]->references [r] + 0] = (uint8_t) (labels [i]->address >> 8);
+            rom [labels [i]->references [r] + 1] = (uint8_t) (labels [i]->address);
+        }
+    }
+
+    return 0;
 }
 
 int cleanup_labels (void)
@@ -648,29 +718,36 @@ int main (int argc, char **argv)
 
     if (find_labels (source) == -1)
     {
+        fprintf (stderr, "Error: Problem occurred while finding labels.\n");
         return EXIT_FAILURE;
     }
 
     if (parse_asm (source) == -1)
     {
+        fprintf (stderr, "Error: Problem occurred while parsing source.\n");
         return EXIT_FAILURE;
     }
 
     if (substitute_labels () == -1)
     {
+        fprintf (stderr, "Error: Problem occurred while substituting labels.\n");
         return EXIT_FAILURE;
     }
 
     if (cleanup_labels () == -1)
     {
+        fprintf (stderr, "Error: Problem occurred while cleaning up labels.\n");
         return EXIT_FAILURE;
     }
 
     /* Write the rom to a file for the simulator */
     if (output_digital () == -1)
     {
+        fprintf (stderr, "Error: Problem occurred while generating output.\n");
         return EXIT_FAILURE;
     }
+
+    fprintf (stdout, "Assembled successfully :3\n");
 
     return EXIT_SUCCESS;
 }
