@@ -151,6 +151,8 @@ do \
     } \
 } while (0)
 
+/* BUG: A typo'd label can be treated as a hex number if it begins with a-f */
+
 #define PARSE_HEX_INT_OR_LABEL(value, ptr) \
 do \
 {\

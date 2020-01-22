@@ -4,7 +4,14 @@
  */
 
 .0x0000
+    jmp     main
 
+output:
+    /* Temporary output instruction */
+    output  r1
+    ret
+
+main:
     /* Set the stack pointer into RAM */
     ldi     hl, 0x2000
     mov     sp, hl
@@ -18,8 +25,3 @@ loop:
     call    output
     jmp     loop
 
-.0x0018
-output:
-    /* Temporary output instruction */
-    output  r1
-    ret
