@@ -23,7 +23,7 @@ Control Logic Outputs:
             b → or
             c → and
             d → xor
-            e → rshift
+            e → CFG
             f → I/O
 
   [8:11]  - Data Bus Consumer
@@ -37,11 +37,11 @@ Control Logic Outputs:
             7 → a1
             8 → a2
             9 → IR
-            a → none (Configuration register?)
+            a → none
             b → none
             c → none
             d → none
-            e → none
+            e → CFG
             f → I/O
 
   [6:7]   - Address Bus Driver
@@ -74,6 +74,10 @@ Assembler macros to implement:
 
         ldi     dc, 0xXXXX
         ldi     sp, 0xXXXX
+        halt
+        reset
+        rom-enable
+        rom-disable
 
 Features that may be useful:
         mov     rX, ah/al
@@ -82,6 +86,8 @@ Features that may be useful:
         I/O block transfer
         notification-register
         rshift
+        invert
+        zero-register
 
 Instructions that could be dropped:
         mov     r2, r2

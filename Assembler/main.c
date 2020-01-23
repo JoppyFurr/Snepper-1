@@ -247,6 +247,12 @@ int parse_asm (FILE *source)
             }
         }
 
+        /* nop */
+        else if (strcmp ("nop", buffer) == 0)
+        {
+            rom [address++] = NOP;
+        }
+
         /* mov */
         else if (strcmp ("mov", buffer) == 0)
         {
@@ -545,8 +551,6 @@ int parse_asm (FILE *source)
         }
 
         /* TODO: I/O */
-        /* TODO cfg-set / cfg-clr */
-
         else if (strcmp ("output", buffer) == 0) /* Temporary */
         {
             SCAN_NEXT_TOKEN ();
@@ -559,6 +563,24 @@ int parse_asm (FILE *source)
                 fprintf (stderr, "Error: Only \"r1\" is valid.\n"); \
                 return -1;
             }
+        }
+
+        /* cfg-set */
+        else if (strcmp ("cfg-set", buffer) == 0)
+        {
+                SCAN_NEXT_TOKEN ();
+                PARSE_INT (value, buffer);
+                rom [address++] = CFG_SET_XX;
+                rom [address++] = (uint8_t) value;
+        }
+
+        /* cfg-clr */
+        else if (strcmp ("cfg-clr", buffer) == 0)
+        {
+                SCAN_NEXT_TOKEN ();
+                PARSE_INT (value, buffer);
+                rom [address++] = CFG_CLR_XX;
+                rom [address++] = (uint8_t) value;
         }
 
         /* add */

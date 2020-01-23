@@ -135,6 +135,8 @@ typedef enum Instruction_e {
 
     /* TODO: I/O Block */
     TEMP_OUTPUT_R1  = 0x70, /* TEMPORARY OUTPUT REGISTER */
+    CFG_SET_XX      = 0x7e,
+    CFG_CLR_XX      = 0x7f,
 
     /* ALU Commands */
     ADD_R1_R1       = 0x80,

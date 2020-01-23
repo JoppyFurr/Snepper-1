@@ -19,7 +19,7 @@ typedef enum DataDriver_e {
     DATA_OUT_OR     = 0xb000,
     DATA_OUT_AND    = 0xc000,
     DATA_OUT_XOR    = 0xd000,
-    DATA_OUT_RSHIFT = 0xe000, /* Unused */
+    DATA_OUT_CFG    = 0xe000,
     DATA_OUT_IO     = 0xf000
 } DataDriver;
 
@@ -38,7 +38,7 @@ typedef enum DataConsumer_e {
     DATA_IN_none2   = 0x0b00,
     DATA_IN_none3   = 0x0c00,
     DATA_IN_none4   = 0x0d00,
-    DATA_IN_none5   = 0x0e00,
+    DATA_IN_CFG     = 0x0e00,
     DATA_IN_IO      = 0x0f00
 } DataConsumer;
 
@@ -415,12 +415,28 @@ void generate_microcode ()
     store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_R1 | DATA_IN_IO | MISC_FINAL_STEP);
     instruction++;
 
-    while (instruction < 0x80)
+    while (instruction < 0x7e)
     {
         READ_INSTRUCTION;
         store_step (instruction, 1, EMPTY_FINAL_STEP);
         instruction++;
     }
+
+    /* cfg-set */
+    printf ("0x%02x - cfg-set\n", instruction);
+    READ_INSTRUCTION;
+    store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_A1  | MISC_PC_COUNT);
+    store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_CFG | DATA_IN_A2  | MISC_none);
+    store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_OR  | DATA_IN_CFG | MISC_FINAL_STEP);
+    instruction++;
+
+    /* cfg-clr */
+    printf ("0x%02x - cfg-clr\n", instruction);
+    READ_INSTRUCTION;
+    store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_A1  | MISC_PC_COUNT);
+    store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_CFG | DATA_IN_A2  | MISC_none);
+    store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_AND | DATA_IN_CFG | MISC_FINAL_STEP);
+    instruction++;
 
     /* add rX, rX */
     printf ("0x%02x - add rX, rX\n", instruction);
