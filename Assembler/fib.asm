@@ -17,8 +17,7 @@ bcd_output:
 
 bcd_10s_loop:
     ldi     r4, 10      /* if r2 < 10 */
-    mov     r3, r2
-    sub     r3, r4
+    cmp     r2, r4
 
     jmp-neg bcd_10s_done    /* No more tens to convert */
 

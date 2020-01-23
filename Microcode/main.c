@@ -19,7 +19,7 @@ typedef enum DataDriver_e {
     DATA_OUT_OR     = 0xb000,
     DATA_OUT_AND    = 0xc000,
     DATA_OUT_XOR    = 0xd000,
-    DATA_OUT_RSHIFT = 0xe000,
+    DATA_OUT_RSHIFT = 0xe000, /* Unused */
     DATA_OUT_IO     = 0xf000
 } DataDriver;
 
@@ -463,6 +463,7 @@ void generate_microcode ()
             instruction++;
         }
     }
+
     /* subc rX, rX */
     printf ("0x%02x - subc rX, rX\n", instruction);
     for (int dst = 0; dst < 4; dst++)
@@ -476,6 +477,7 @@ void generate_microcode ()
             instruction++;
         }
     }
+
     /* and rX, rX */
     printf ("0x%02x - and rX, rX\n", instruction);
     for (int dst = 0; dst < 4; dst++)
@@ -489,6 +491,7 @@ void generate_microcode ()
             instruction++;
         }
     }
+
     /* or rX, rX */
     printf ("0x%02x - or rX, rX\n", instruction);
     for (int dst = 0; dst < 4; dst++)
@@ -502,6 +505,7 @@ void generate_microcode ()
             instruction++;
         }
     }
+
     /* xor rX, rX */
     printf ("0x%02x - xor rX, rX\n", instruction);
     for (int dst = 0; dst < 4; dst++)
@@ -515,23 +519,17 @@ void generate_microcode ()
             instruction++;
         }
     }
-    /* TODO: lshift rX, {1,2} */
-    printf ("0x%02x - TODO: lshift rX, {1,2}\n", instruction);
+
+    /* cmp rX, rX */
+    printf ("0x%02x - cmp rX, rX\n", instruction);
     for (int dst = 0; dst < 4; dst++)
     {
-        for (int shift = 0; shift < 2; shift++)
+        for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION;
-            instruction++;
-        }
-    }
-    /* TODO: rshift rX, {1,2} */
-    printf ("0x%02x - TODO: rshift rX, {1,2}\n", instruction);
-    for (int dst = 0; dst < 4; dst++)
-    {
-        for (int shift = 0; shift < 2; shift++)
-        {
-            READ_INSTRUCTION;
+            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [dst] | DATA_IN_A1        | MISC_none);
+            store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | DATA_IN_A2        | MISC_none);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_SUB       | DATA_IN_none      | MISC_FINAL_STEP);
             instruction++;
         }
     }

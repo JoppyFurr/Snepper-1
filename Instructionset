@@ -77,7 +77,16 @@ Assembler macros to implement:
 
 Features that may be useful:
         mov     rX, ah/al
+        and-cmp rX, rX
+        ALU     rX, 0xXX
         I/O block transfer
+        notification-register
+        rshift
+
+Instructions that could be dropped:
+        mov     r2, r2
+        mov     r3, r3
+        mov     r4, r4
 
 256 instructions:
  00-1f  (32) : Move and load-immediate
@@ -125,12 +134,11 @@ Features that may be useful:
  6e     ret
  6f     unused
 
- 70     input   rX,   0xXX  (value, device)
- 74     output  rX,   0xXX
- 78     input   0xXX, 0xXX
- 79     output  0xXX, 0xXX
- TODO: Direct IO-to-auto-inc-memory instructions
- 7a     input...
+ 70     input   rX
+ 74     output  rX
+ 77     input   dc
+ 79     output  dc
+ 7a
  7b
  7c
  7d
@@ -144,16 +152,15 @@ Features that may be useful:
  c0     and     rX, rX
  d0     or      rX, rX
  e0     xor     rX, rX
- f0     lshift  rX, {1,2}
- f8     rshift  rX, {1,2}
+ f0     cmp     rX, rX
 --------
 
 Configuration register:
- 0 - Halt
- 1 - ROM-disable
- 2 - unused
- 3 - unused
+ 0 - I/O Device bit 0
+ 1 - I/O Device bit 1
+ 2 - I/O Device bit 2
+ 3 - I/O device bit 3
  4 - unused
- 5 - unused
- 6 - LED-disable?
+ 5 - ROM/RAM
+ 6 - Halt
  7 - Reset

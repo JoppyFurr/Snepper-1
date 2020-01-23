@@ -631,8 +631,16 @@ int parse_asm (FILE *source)
             rom [address++] = XOR_R1_R1 + (dst << 2) + (src << 0);
         }
 
-        /* TODO: lshift */
-        /* TODO: rshift */
+        /* cmp */
+        else if (strcmp ("cmp", buffer) == 0)
+        {
+            SCAN_NEXT_TOKEN ();
+            PARSE_REG (dst, buffer);
+            SCAN_NEXT_TOKEN ();
+            PARSE_REG (src, buffer);
+            rom [address++] = CMP_R1_R1 + (dst << 2) + (src << 0);
+        }
+
 
         else
         {
