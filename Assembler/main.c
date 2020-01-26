@@ -550,19 +550,11 @@ int parse_asm (FILE *source)
             rom [address++] = RET;
         }
 
-        /* TODO: I/O */
-        else if (strcmp ("output", buffer) == 0) /* Temporary */
+        else if (strcmp ("output", buffer) == 0)
         {
             SCAN_NEXT_TOKEN ();
-            if (strcmp ("r1", buffer) == 0)
-            {
-                rom [address++] = TEMP_OUTPUT_R1;
-            }
-            else
-            {
-                fprintf (stderr, "Error: Only \"r1\" is valid.\n"); \
-                return -1;
-            }
+            PARSE_REG (src, buffer);
+            rom [address++] = OUTPUT_R1 + (dst << 0);
         }
 
         /* cfg-set */

@@ -20,7 +20,7 @@ typedef enum DataDriver_e {
     DATA_OUT_AND    = 0xc000,
     DATA_OUT_XOR    = 0xd000,
     DATA_OUT_CFG    = 0xe000,
-    DATA_OUT_IO     = 0xf000
+    DATA_OUT_INPUT  = 0xf000
 } DataDriver;
 
 typedef enum DataConsumer_e {
@@ -39,7 +39,7 @@ typedef enum DataConsumer_e {
     DATA_IN_none3   = 0x0c00,
     DATA_IN_none4   = 0x0d00,
     DATA_IN_CFG     = 0x0e00,
-    DATA_IN_IO      = 0x0f00
+    DATA_IN_OUTPUT  = 0x0f00
 } DataConsumer;
 
 typedef enum AddressDriver_e {
@@ -408,12 +408,27 @@ void generate_microcode ()
     store_step (instruction, 1, EMPTY_FINAL_STEP);
     instruction++;
 
-    /* TODO: I/O Instructions */
-    printf ("0x%02x - TODO: I/O Instructions\n", instruction);
+    /* TODO: Finish I/O Instructions */
+    printf ("0x%02x - TODO: input rX\n", instruction);
 
-    READ_INSTRUCTION;
-    store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_R1 | DATA_IN_IO | MISC_FINAL_STEP);
-    instruction++;
+    while (instruction < 0x74)
+    {
+        READ_INSTRUCTION;
+        store_step (instruction, 1, EMPTY_FINAL_STEP);
+        instruction++;
+    }
+
+    /* output rX */
+    printf ("0x%02x - output rX\n", instruction);
+    for (int src = 0; src < 4; src++)
+    {
+        READ_INSTRUCTION;
+        store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | DATA_IN_OUTPUT | MISC_FINAL_STEP);
+        instruction++;
+    }
+
+    printf ("0x%02x - TODO: input dc\n", instruction);
+    printf ("0x%02x - TODO: output dc\n", instruction);
 
     while (instruction < 0x7e)
     {

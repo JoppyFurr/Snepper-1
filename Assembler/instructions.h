@@ -133,8 +133,15 @@ typedef enum Instruction_e {
     RET             = 0x6e,
     UNUSED_6f       = 0x6f,
 
-    /* TODO: I/O Block */
-    TEMP_OUTPUT_R1  = 0x70, /* TEMPORARY OUTPUT REGISTER */
+    /* TODO: Finish I/O Block */
+    INPUT_R1        = 0x70,
+    INPUT_R2        = 0x71,
+    INPUT_R3        = 0x72,
+    INPUT_R4        = 0x73,
+    OUTPUT_R1       = 0x74,
+    OUTPUT_R2       = 0x75,
+    OUTPUT_R3       = 0x76,
+    OUTPUT_R4       = 0x77,
     CFG_SET_XX      = 0x7e,
     CFG_CLR_XX      = 0x7f,
 
