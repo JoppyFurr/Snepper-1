@@ -19,9 +19,16 @@ main:
     /* Initialise registers */
     ldi     r1, 0
     ldi     r2, 1
+    ldi     r3, 0
+    ldi     r4, 10
 
 loop:
     add     r1, r2
     call    output
+    add     r3, 1
+    cmp     r3, r4
+    jmp-z   exit
     jmp     loop
 
+exit:
+    halt

@@ -575,6 +575,13 @@ int parse_asm (FILE *source)
                 rom [address++] = (uint8_t) value;
         }
 
+        /* halt */
+        else if (strcmp ("halt", buffer) == 0)
+        {
+                rom [address++] = CFG_SET_XX;
+                rom [address++] = CFG_REG_HALT;
+        }
+
         /* add */
         else if (strcmp ("add", buffer) == 0)
         {

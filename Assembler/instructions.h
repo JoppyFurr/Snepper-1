@@ -284,5 +284,10 @@ typedef enum Instruction_e {
 
 } Instruction;
 
+#define CFG_REG_IO_MASK     0x0f
+#define CFG_REG_ROM_DISABLE 0x20
+#define CFG_REG_HALT        0x40
+#define CFG_REG_RESET       0x80
+
 #define NOP MOV_R1_R1
 

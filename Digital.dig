@@ -2563,7 +2563,7 @@ ae0,ae7,0,0,0,0,4920,4520,4620,ac7,0,0,0,0,4920,ae0,ae0,ae7,0,0,0,0,4920,a1c,54a
       <elementAttributes>
         <entry>
           <string>Label</string>
-          <string>MOSI Buffer</string>
+          <string>Output Buffer</string>
         </entry>
         <entry>
           <string>Bits</string>
@@ -2577,7 +2577,7 @@ ae0,ae7,0,0,0,0,4920,4520,4620,ac7,0,0,0,0,4920,ae0,ae0,ae7,0,0,0,0,4920,a1c,54a
       <elementAttributes>
         <entry>
           <string>Label</string>
-          <string>MOSI Buffer Status</string>
+          <string>Output Buffer Status</string>
         </entry>
       </elementAttributes>
       <pos x="2100" y="2220"/>
@@ -2800,6 +2800,21 @@ ae0,ae7,0,0,0,0,4920,4520,4620,ac7,0,0,0,0,4920,ae0,ae0,ae7,0,0,0,0,4920,a1c,54a
         </entry>
       </elementAttributes>
       <pos x="940" y="2080"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Text</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Description</string>
+          <string>Configuration Register:
+    [0:3] → I/O Channel
+    4
+    5 → ROM Disable
+    6 → Halt
+    7 → Reset</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1080" y="2780"/>
     </visualElement>
   </visualElements>
   <wires>
