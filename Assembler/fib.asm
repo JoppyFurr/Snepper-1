@@ -10,35 +10,31 @@
  * Output r1 using binary-coded decimal
  */
 bcd_output:
-    push    r1          /* Save all registers */
+    push    r1          /* Save modified registers */
     push    r2
-    push    r3
-    push    r4
     mov     r2, r1      /* r2 contains the remaining value to convert */
     ldi     r1, 0       /* r1 contains the bcd for outputting */
 
-bcd_10s_loop:
-    ldi     r4, 10      /* if r2 < 10 */
-    cmp     r2, r4
-
-    jmp-neg bcd_10s_done    /* No more tens to convert */
-
-    ldi     r3, 10      /* Subtract 10 from r2 */
-    sub     r2, r3
-    ldi     r3, 0x10    /* Add 0x10 to r1 */
-    add     r1, r3
-
+bcd_20s_loop:
+    cmp     r2, 20
+    jmp-neg bcd_10s_loop
+    sub     r2, 20
+    add     r1, 0x20
     jmp     bcd_10s_loop
 
-bcd_10s_done:
+bcd_10s_loop:
+    cmp     r2, 10
+    jmp-neg bcd_finish
+    sub     r2, 10
+    add     r1, 0x10
+    jmp     bcd_10s_loop
+
+bcd_finish:
     add     r1, r2  /* Add the remaining ones */
     output  r1      /* Temporary output instruction */
-    pop     r4      /* Restore all registers */
-    pop     r3
-    pop     r2
+    pop     r2      /* Restore modified registers */
     pop     r1
     ret
-
 
 main:
     /* Set the stack pointer into RAM */
@@ -55,10 +51,8 @@ loop:
     mov     r2, r1
     add     r1, r3
     call    bcd_output
-    ldi     r3, 1
-    add     r4, r3
-    ldi     r3, 10
-    cmp     r3, r4
+    add     r4, 1
+    cmp     r4, 10
     jmp-z   exit
     jmp     loop
 

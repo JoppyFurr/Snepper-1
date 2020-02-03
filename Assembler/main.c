@@ -198,6 +198,17 @@ do \
     } \
 } while (0)
 
+#define VALIDATE_ALU_REGS() \
+do \
+{ \
+    if (src == dst) \
+    { \
+        fprintf (stderr, "Error: source and destination registers must not be the same.\n"); \
+        return -1; \
+    } \
+} while (0)
+
+
 #define UNEXPECTED(input) \
 do \
 { \
@@ -588,8 +599,18 @@ int parse_asm (FILE *source)
             SCAN_NEXT_TOKEN ();
             PARSE_REG (dst, buffer);
             SCAN_NEXT_TOKEN ();
-            PARSE_REG (src, buffer);
-            rom [address++] = ADD_R1_R1 + (dst << 2) + (src << 0);
+            if (strncmp ("r", buffer, 1) == 0)
+            {
+                PARSE_REG (src, buffer);
+                VALIDATE_ALU_REGS ();
+                rom [address++] = ADD_R1_R1 + (dst << 2) + (src << 0);
+            }
+            else
+            {
+                PARSE_INT (value, buffer);
+                rom [address++] = ADD_R1_R1 + (dst << 2) + (dst << 0);
+                rom [address++] = (uint8_t) value;
+            }
         }
 
         /* addc */
@@ -598,8 +619,18 @@ int parse_asm (FILE *source)
             SCAN_NEXT_TOKEN ();
             PARSE_REG (dst, buffer);
             SCAN_NEXT_TOKEN ();
-            PARSE_REG (src, buffer);
-            rom [address++] = ADDC_R1_R1 + (dst << 2) + (src << 0);
+            if (strncmp ("r", buffer, 1) == 0)
+            {
+                PARSE_REG (src, buffer);
+                VALIDATE_ALU_REGS ();
+                rom [address++] = ADDC_R1_R1 + (dst << 2) + (src << 0);
+            }
+            else
+            {
+                PARSE_INT (value, buffer);
+                rom [address++] = ADDC_R1_R1 + (dst << 2) + (dst << 0);
+                rom [address++] = (uint8_t) value;
+            }
         }
 
         /* sub */
@@ -608,8 +639,18 @@ int parse_asm (FILE *source)
             SCAN_NEXT_TOKEN ();
             PARSE_REG (dst, buffer);
             SCAN_NEXT_TOKEN ();
-            PARSE_REG (src, buffer);
-            rom [address++] = SUB_R1_R1 + (dst << 2) + (src << 0);
+            if (strncmp ("r", buffer, 1) == 0)
+            {
+                PARSE_REG (src, buffer);
+                VALIDATE_ALU_REGS ();
+                rom [address++] = SUB_R1_R1 + (dst << 2) + (src << 0);
+            }
+            else
+            {
+                PARSE_INT (value, buffer);
+                rom [address++] = SUB_R1_R1 + (dst << 2) + (dst << 0);
+                rom [address++] = (uint8_t) value;
+            }
         }
 
         /* subc */
@@ -618,8 +659,18 @@ int parse_asm (FILE *source)
             SCAN_NEXT_TOKEN ();
             PARSE_REG (dst, buffer);
             SCAN_NEXT_TOKEN ();
-            PARSE_REG (src, buffer);
-            rom [address++] = SUBC_R1_R1 + (dst << 2) + (src << 0);
+            if (strncmp ("r", buffer, 1) == 0)
+            {
+                PARSE_REG (src, buffer);
+                VALIDATE_ALU_REGS ();
+                rom [address++] = SUBC_R1_R1 + (dst << 2) + (src << 0);
+            }
+            else
+            {
+                PARSE_INT (value, buffer);
+                rom [address++] = SUBC_R1_R1 + (dst << 2) + (dst << 0);
+                rom [address++] = (uint8_t) value;
+            }
         }
 
         /* and */
@@ -628,8 +679,18 @@ int parse_asm (FILE *source)
             SCAN_NEXT_TOKEN ();
             PARSE_REG (dst, buffer);
             SCAN_NEXT_TOKEN ();
-            PARSE_REG (src, buffer);
-            rom [address++] = AND_R1_R1 + (dst << 2) + (src << 0);
+            if (strncmp ("r", buffer, 1) == 0)
+            {
+                PARSE_REG (src, buffer);
+                VALIDATE_ALU_REGS ();
+                rom [address++] = AND_R1_R1 + (dst << 2) + (src << 0);
+            }
+            else
+            {
+                PARSE_INT (value, buffer);
+                rom [address++] = AND_R1_R1 + (dst << 2) + (dst << 0);
+                rom [address++] = (uint8_t) value;
+            }
         }
 
         /* or */
@@ -638,8 +699,18 @@ int parse_asm (FILE *source)
             SCAN_NEXT_TOKEN ();
             PARSE_REG (dst, buffer);
             SCAN_NEXT_TOKEN ();
-            PARSE_REG (src, buffer);
-            rom [address++] = OR_R1_R1 + (dst << 2) + (src << 0);
+            if (strncmp ("r", buffer, 1) == 0)
+            {
+                PARSE_REG (src, buffer);
+                VALIDATE_ALU_REGS ();
+                rom [address++] = OR_R1_R1 + (dst << 2) + (src << 0);
+            }
+            else
+            {
+                PARSE_INT (value, buffer);
+                rom [address++] = OR_R1_R1 + (dst << 2) + (dst << 0);
+                rom [address++] = (uint8_t) value;
+            }
         }
 
         /* xor */
@@ -648,8 +719,18 @@ int parse_asm (FILE *source)
             SCAN_NEXT_TOKEN ();
             PARSE_REG (dst, buffer);
             SCAN_NEXT_TOKEN ();
-            PARSE_REG (src, buffer);
-            rom [address++] = XOR_R1_R1 + (dst << 2) + (src << 0);
+            if (strncmp ("r", buffer, 1) == 0)
+            {
+                PARSE_REG (src, buffer);
+                VALIDATE_ALU_REGS ();
+                rom [address++] = XOR_R1_R1 + (dst << 2) + (src << 0);
+            }
+            else
+            {
+                PARSE_INT (value, buffer);
+                rom [address++] = XOR_R1_R1 + (dst << 2) + (dst << 0);
+                rom [address++] = (uint8_t) value;
+            }
         }
 
         /* cmp */
@@ -658,8 +739,18 @@ int parse_asm (FILE *source)
             SCAN_NEXT_TOKEN ();
             PARSE_REG (dst, buffer);
             SCAN_NEXT_TOKEN ();
-            PARSE_REG (src, buffer);
-            rom [address++] = CMP_R1_R1 + (dst << 2) + (src << 0);
+            if (strncmp ("r", buffer, 1) == 0)
+            {
+                PARSE_REG (src, buffer);
+                VALIDATE_ALU_REGS ();
+                rom [address++] = CMP_R1_R1 + (dst << 2) + (src << 0);
+            }
+            else
+            {
+                PARSE_INT (value, buffer);
+                rom [address++] = CMP_R1_R1 + (dst << 2) + (dst << 0);
+                rom [address++] = (uint8_t) value;
+            }
         }
 
 

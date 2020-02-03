@@ -151,14 +151,14 @@ Instructions that could be dropped:
  7e     cfg-set 0xXX
  7f     cfg-clr 0xXX
 
- 80     add     rX, rX
- 90     addc    rX, rX
- a0     sub     rX, rX
- b0     subc    rX, rX
- c0     and     rX, rX
- d0     or      rX, rX
- e0     xor     rX, rX
- f0     cmp     rX, rX
+ 80     add     rX, { rX / 0xXX }
+ 90     addc    rX, { rX / 0xXX }
+ a0     sub     rX, { rX / 0xXX }
+ b0     subc    rX, { rX / 0xXX }
+ c0     and     rX, { rX / 0xXX }
+ d0     or      rX, { rX / 0xXX }
+ e0     xor     rX, { rX / 0xXX }
+ f0     cmp     rX, { rX / 0xXX }
 --------
 
 Configuration register:
@@ -170,3 +170,13 @@ Configuration register:
  5 - ROM/RAM
  6 - Halt
  7 - Reset
+
+--------
+
+ Instruction-set improvements:
+ Test by calculating and bcd-converting 10 Fibonacci numbers
+ 1451 - Starting point
+ 1401 - Add a 20s loop for BCD conversion
+ 1326 - add immediate
+ 1281 - sub immediate
+ 1038 - immediate support for remaining ALU instructions
