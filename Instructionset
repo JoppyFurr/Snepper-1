@@ -82,7 +82,6 @@ Assembler macros to implement:
 Features that may be useful:
         mov     rX, ah/al
         and-cmp rX, rX
-        ALU     rX, 0xXX
         I/O block transfer
         notification-register
         rshift
@@ -104,8 +103,8 @@ Instructions that could be dropped:
 
 --------
 
- 00     mov/nop rX, rX
- 10     ldi     rX, 0xXX
+ 00     mov     rX, { rX / 0xXX }
+ 10-13  unused
  14     mov     dh, rX
  18     mov     dl, rX
  1c     ldi     hl, 0xXXXX

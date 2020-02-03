@@ -130,26 +130,35 @@ void generate_microcode ()
     uint16_t data_out_reg [4] = { DATA_OUT_R1, DATA_OUT_R2, DATA_OUT_R3, DATA_OUT_R4 };
     uint16_t data_in_reg  [4] = { DATA_IN_R1,  DATA_IN_R2,  DATA_IN_R3,  DATA_IN_R4  };
 
-    /* mov rX, rX */
-    printf ("0x%02x - mov rX, rX\n", instruction);
+    /* mov rX, { rX / 0xXX } */
+    printf ("0x%02x - mov rX, { rX / 0xXX }\n", instruction);
     for (int dst = 0; dst < 4; dst++)
     {
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION ();
-            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | data_in_reg [dst] | MISC_FINAL_STEP);
+
+            if (src == dst)
+            {
+                store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | data_in_reg [dst] | MISC_PC_COUNT);
+                store_step (instruction, 2, EMPTY_FINAL_STEP);
+            }
+            else
+            {
+                store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | data_in_reg [dst] | MISC_FINAL_STEP);
+            }
+
             instruction++;
         }
     }
 
-    /* ldi rX, 0xXX */
-    printf ("0x%02x - ldi rX, 0xXX\n", instruction);
-    for (int dst = 0; dst < 4; dst++)
+    /* unused */
+    printf ("0x%02x - unused\n", instruction);
+    while (instruction < 0x14)
     {
-            READ_INSTRUCTION ();
-            store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | data_in_reg [dst] | MISC_PC_COUNT);
-            store_step (instruction, 2, EMPTY_FINAL_STEP);
-            instruction++;
+        READ_INSTRUCTION ();
+        store_step (instruction, 1, EMPTY_FINAL_STEP);
+        instruction++;
     }
 
     /* mov dh, rX */

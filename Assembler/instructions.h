@@ -22,10 +22,10 @@ typedef enum Instruction_e {
     MOV_R4_R3       = 0x0e,
     MOV_R4_R4       = 0x0f,
 
-    LDI_R1_XX       = 0x10,
-    LDI_R2_XX       = 0x11,
-    LDI_R3_XX       = 0x12,
-    LDI_R4_XX       = 0x13,
+    UNUSED_10       = 0x10,
+    UNUSED_11       = 0x11,
+    UNUSED_12       = 0x12,
+    UNUSED_13       = 0x13,
 
     MOV_DH_R1       = 0x14,
     MOV_DH_R2       = 0x15,
@@ -145,7 +145,7 @@ typedef enum Instruction_e {
     CFG_SET_XX      = 0x7e,
     CFG_CLR_XX      = 0x7f,
 
-    /* ALU Commands */
+    /* ALU Instructions */
     ADD_R1_R1       = 0x80,
     ADD_R1_R2       = 0x81,
     ADD_R1_R3       = 0x82,
@@ -289,5 +289,5 @@ typedef enum Instruction_e {
 #define CFG_REG_HALT        0x40
 #define CFG_REG_RESET       0x80
 
-#define NOP MOV_R1_R1
+#define NOP UNUSED_1F
 
