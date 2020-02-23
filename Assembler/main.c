@@ -130,13 +130,21 @@ do \
 #define PARSE_INT(value, ptr) \
 do \
 { \
-    char *endptr = NULL; \
-    value = strtoul (ptr, & endptr, 0); \
-    if (endptr == ptr) \
+    /* TODO: Won't work with whitespace */ \
+    if (ptr [0] == '\'' && ptr [2] == '\'') \
+    {\
+        value = ptr [1];\
+    }\
+    else \
     { \
-        fprintf (stderr, "Error: Unexpected input \"%s\". Expected integer.\n", ptr); \
-        return -1; \
-    } \
+        char *endptr = NULL; \
+        value = strtoul (ptr, & endptr, 0); \
+        if (endptr == ptr) \
+        { \
+            fprintf (stderr, "Error: Unexpected input \"%s\". Expected integer.\n", ptr); \
+            return -1; \
+        } \
+    }\
 } while (0)
 
 #define PARSE_HEX_INT(value, ptr) \
@@ -233,6 +241,7 @@ int parse_asm (FILE *source)
     while (fscanf (source, "%79s", buffer) != EOF)
     {
         /* Comment */
+        /* TODO:Allow comments to end without whitespace */
         if (strcmp ("/*", buffer) == 0)
         {
             do
@@ -255,6 +264,28 @@ int parse_asm (FILE *source)
             {
                 fprintf (stderr, "[%s] Error: Failed to set label address.\n", __func__); \
                 return -1;
+            }
+        }
+
+        /* Data */
+        else if (strcmp ("data", buffer) == 0)
+        {
+            SCAN_NEXT_TOKEN ();
+
+            /* String */
+            /* TODO: Currently won't allow whitespace */
+            if (buffer[0] == '"')
+            {
+                int i = 1;
+                while (buffer[i] != '"')
+                {
+                    rom [address++] = buffer[i];
+                    i++;
+                }
+            }
+            else
+            {
+                UNEXPECTED (buffer);
             }
         }
 
@@ -367,11 +398,9 @@ int parse_asm (FILE *source)
                 else if (strncmp ("[", buffer, 1) == 0)
                 {
                     rom [address++] = LD_R1_XXXX + (dst << 0);
-                    SCAN_NEXT_TOKEN ();
                     /* TODO - This won't understand the brackets */
-                    PARSE_HEX_INT_OR_LABEL (value, buffer);
-                    fprintf (stderr, "Error: Implementation is WIP.\n"); \
-                    return -1;
+                    fprintf (stderr, "Warning: ld Implementation is WIP.\n"); \
+                    PARSE_HEX_INT_OR_LABEL (value, &buffer [1]);
                     rom [address++] = (uint8_t) (value >> 8);
                     rom [address++] = (uint8_t) value;
                 }
@@ -411,9 +440,8 @@ int parse_asm (FILE *source)
             else if (strncmp ("[", buffer, 1) == 0)
             {
                 /* TODO - This won't understand the brackets */
+                fprintf (stderr, "Warning: st Implementation is WIP.\n"); \
                 PARSE_HEX_INT_OR_LABEL (value, & buffer [1]);
-                fprintf (stderr, "Error: Implementation is WIP.\n"); \
-                return -1;
                 SCAN_NEXT_TOKEN ();
                 PARSE_REG (src, buffer);
                 rom [address++] = ST_XXXX_R1+ (src << 0);
