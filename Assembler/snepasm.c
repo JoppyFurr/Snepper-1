@@ -525,37 +525,37 @@ int parse_asm (FILE *source)
                 rom [address++] = (uint8_t) value;
             }
         }
-        else if (strcmp ("jmp-neg", buffer) == 0)
+        else if (strcmp ("jmp-c", buffer) == 0)
         {
             SCAN_NEXT_TOKEN ();
 
-            /* jmp-neg hl */
+            /* jmp-c hl */
             if (strcmp ("hl", buffer) == 0)
             {
-                rom [address++] = JMP_NEG_HL;
+                rom [address++] = JMP_C_HL;
             }
-            /* jmp-neg 0xXXXX */
+            /* jmp-c 0xXXXX */
             else
             {
-                rom [address++] = JMP_NEG_XXXX;
+                rom [address++] = JMP_C_XXXX;
                 PARSE_HEX_INT_OR_LABEL (value, buffer);
                 rom [address++] = (uint8_t) (value >> 8);
                 rom [address++] = (uint8_t) value;
             }
         }
-        else if (strcmp ("jmp-pos", buffer) == 0)
+        else if (strcmp ("jmp-nc", buffer) == 0)
         {
             SCAN_NEXT_TOKEN ();
 
-            /* jmp-pos hl */
+            /* jmp-nc hl */
             if (strcmp ("hl", buffer) == 0)
             {
-                rom [address++] = JMP_POS_HL;
+                rom [address++] = JMP_NC_HL;
             }
-            /* jmp-pos 0xXXXX */
+            /* jmp-nc 0xXXXX */
             else
             {
-                rom [address++] = JMP_POS_XXXX;
+                rom [address++] = JMP_NC_XXXX;
                 PARSE_HEX_INT_OR_LABEL (value, buffer);
                 rom [address++] = (uint8_t) (value >> 8);
                 rom [address++] = (uint8_t) value;

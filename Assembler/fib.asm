@@ -75,7 +75,7 @@ decimal_output:
 
 decimal_100s_loop:
     cmp     r2, 100
-    jmp-neg decimal_100s_finish
+    jmp-c   decimal_100s_finish
     sub     r2, 100
     add     r1, 1
     jmp     decimal_100s_loop
@@ -86,7 +86,7 @@ decimal_100s_finish:
 
 decimal_10s_loop:
     cmp     r2, 10
-    jmp-neg decimal_10s_finish
+    jmp-c   decimal_10s_finish
     sub     r2, 10
     add     r1, 1
     jmp     decimal_10s_loop
@@ -153,7 +153,7 @@ loop:
     /* Temporarily calling show_string from here until the call bug is fixed */
     call    show_string
     add     r4, 1
-    cmp     r4, 11 /* TODO: CMP needs to be improved, as 233 - 100  (133) is detected as negative. Maybe we should check for carry/borrow instead? */
+    cmp     r4, 12 /* TODO: CMP needs to be improved, as 233 - 100  (133) is detected as negative. Maybe we should check for carry/borrow instead? */
     jmp-z   exit
     jmp     loop
 

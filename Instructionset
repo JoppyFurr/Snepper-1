@@ -3,7 +3,7 @@ Control Logic Inputs:
 
   [12]    - unused
   [4:11]  - Instruction
-  [3]     - Flag (zero-flag if lsb=0, neg-flag if lsb=1)
+  [3]     - Flag (zero-flag if lsb=0, carry-flag if lsb=1)
   [0:2]   - Step
 
 Control Logic Outputs:
@@ -125,15 +125,15 @@ Instructions that could be dropped:
  60     jmp     hl
  61     unused
  62     jmp-z   hl
- 63     jmp-neg hl
+ 63     jmp-c   hl
  64     jmp-nz  hl
- 65     jmp-pos hl
+ 65     jmp-nc  hl
  66     jmp     0xXXXX
  67     unused
  68     jmp-z   0xXXXX
- 69     jmp-neg 0xXXXX
+ 69     jmp-c   0xXXXX
  6a     jmp-nz  0xXXXX
- 6b     jmp-pos 0xXXXX
+ 6b     jmp-nc  0xXXXX
  6c     call    hl
  6d     call    0xXXXX
  6e     ret
