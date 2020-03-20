@@ -1,3 +1,3 @@
 #!/bin/sh
-gcc -o main main.c
-./main
+gcc -o microcode-gen microcode-gen.c
+./microcode-gen

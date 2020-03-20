@@ -1,3 +1,3 @@
 #!/bin/sh
-gcc -o main main.c
-./main fib.asm
+gcc -o snepasm snepasm.c
+./snepasm fib.asm
