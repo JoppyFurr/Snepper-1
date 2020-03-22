@@ -153,7 +153,7 @@ loop:
     /* Temporarily calling show_string from here until the call bug is fixed */
     call    show_string
     add     r4, 1
-    cmp     r4, 12 /* TODO: CMP needs to be improved, as 233 - 100  (133) is detected as negative. Maybe we should check for carry/borrow instead? */
+    cmp     r4, 12
     jmp-z   exit
     jmp     loop
 
