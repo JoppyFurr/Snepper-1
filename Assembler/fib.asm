@@ -97,8 +97,7 @@ decimal_10s_finish:
 decimal_1s:
     st      [0x4007], r2 /* Output the ones */
 
-    /* TODO: There seems to be a bug in call, corrupting registers */
-    /* call    show_string */
+    call    show_string
     pop     r2      /* Restore modified registers */
     pop     r1
     ret
@@ -150,8 +149,6 @@ loop:
     mov     r2, r1
     add     r1, r3
     call    decimal_output
-    /* Temporarily calling show_string from here until the call bug is fixed */
-    call    show_string
     add     r4, 1
     cmp     r4, 12
     jmp-z   exit

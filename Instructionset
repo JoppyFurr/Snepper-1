@@ -89,9 +89,8 @@ Features that may be useful:
         zero-register
 
 Instructions that could be dropped:
-        mov     r2, r2
-        mov     r3, r3
-        mov     r4, r4
+        One of add / addc
+        One of sub / subc
 
 256 instructions:
  00-1f  (32) : Move and load-immediate

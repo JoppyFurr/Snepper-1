@@ -278,8 +278,8 @@ void generate_microcode ()
     for (int dst = 0; dst < 4; dst++)
     {
             READ_INSTRUCTION ();
-            store_step (instruction, 1, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM | data_in_reg [dst] | MISC_SP_DEC);
-            store_step (instruction, 2, EMPTY_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_none      | MISC_SP_DEC);
+            store_step (instruction, 2, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
     }
 
@@ -288,8 +288,8 @@ void generate_microcode ()
     for (int src = 0; src < 4; src++)
     {
             READ_INSTRUCTION ();
-            store_step (instruction, 1, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM       | DATA_IN_none | MISC_SP_INC);
-            store_step (instruction, 2, ADDR_OUT_SP | ADDR_IN_none | data_out_reg [src] | DATA_IN_RAM  | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_SP | ADDR_IN_none | data_out_reg [src] | DATA_IN_RAM  | MISC_SP_INC);
+            store_step (instruction, 2, EMPTY_FINAL_STEP);
             instruction++;
     }
 
