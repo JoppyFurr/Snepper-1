@@ -179,8 +179,8 @@ void generate_microcode ()
         instruction++;
     }
 
-    /* ldi hl, 0xXXXX */
-    printf ("0x%02x - ldi hl, 0xXXXX\n", instruction);
+    /* mov hl, 0xXXXX */
+    printf ("0x%02x - mov hl, 0xXXXX\n", instruction);
     READ_INSTRUCTION ();
     store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DH   | MISC_PC_COUNT);
     store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_DL   | MISC_PC_COUNT);

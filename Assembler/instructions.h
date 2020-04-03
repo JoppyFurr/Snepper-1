@@ -36,7 +36,7 @@ typedef enum Instruction_e {
     MOV_DL_R3       = 0x1a,
     MOV_DL_R4       = 0x1b,
 
-    LDI_HL_XXXX     = 0x1c,
+    MOV_HL_XXXX     = 0x1c,
     MOV_DC_HL       = 0x1d,
     MOV_SP_HL       = 0x1e,
     UNUSED_1F       = 0x1f,

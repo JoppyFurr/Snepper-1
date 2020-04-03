@@ -70,10 +70,10 @@ Control Logic Outputs:
             6 → none
             7 → Instruction complete
 
-Assembler macros to implement:
+Assembler macros / instructions to implement:
 
-        ldi     dc, 0xXXXX
-        ldi     sp, 0xXXXX
+        mov     dc, 0xXXXX
+        mov     sp, 0xXXXX
         halt
         reset
         rom-enable
@@ -81,6 +81,7 @@ Assembler macros to implement:
 
 Features that may be useful:
         mov     rX, ah/al
+        mov sp, 0xXXXX
         and-cmp rX, rX
         I/O block transfer
         notification-register
@@ -102,13 +103,11 @@ Instructions that could be dropped:
 
 --------
 
- TODO: Consider renaming all 'ldi' to 'mov'
-
  00     mov     rX, { rX / 0xXX }
  10-13  unused
  14     mov     dh, rX
  18     mov     dl, rX
- 1c     ldi     hl, 0xXXXX
+ 1c     mov     hl, 0xXXXX
  1d     mov     dc, hl
  1e     mov     sp, hl
  1f     unused

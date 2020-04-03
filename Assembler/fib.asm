@@ -103,12 +103,12 @@ decimal_1s:
 
 main:
     /* Set the stack pointer into RAM */
-    ldi     hl, 0x2000
+    mov     hl, 0x2000
     mov     sp, hl
 
     /* Show "SNEPPER1" at 0x4000 */
     /* TODO: Loop / memcpy */
-    ldi     hl, 0x4000
+    mov     hl, 0x4000
     mov     dc, hl
     ld      r1, [0x0010]
     st      [dc++], r1
@@ -130,7 +130,7 @@ main:
 
     /* Blank display */
     mov     r1, 0x20
-    ldi     hl, 0x4000
+    mov     hl, 0x4000
     mov     dc, hl
     st      [dc++], r1
     st      [dc++], r1
