@@ -74,6 +74,7 @@ Assembler macros / instructions to implement:
 
         mov     dc, 0xXXXX
         mov     sp, 0xXXXX
+        st      [0xXXXX], 0xXX
         halt
         reset
         rom-enable
@@ -151,9 +152,9 @@ Instructions that could be dropped:
  7f     cfg-clr 0xXX
 
  80     add     rX, { rX / 0xXX }
- 90     addc    rX, { rX / 0xXX }
+ 90     add-c   rX, { rX / 0xXX }
  a0     sub     rX, { rX / 0xXX }
- b0     subc    rX, { rX / 0xXX }
+ b0     sub-c   rX, { rX / 0xXX }
  c0     and     rX, { rX / 0xXX }
  d0     or      rX, { rX / 0xXX }
  e0     xor     rX, { rX / 0xXX }

@@ -642,8 +642,8 @@ int parse_asm (FILE *source)
             }
         }
 
-        /* addc */
-        else if (strcmp ("addc", buffer) == 0)
+        /* add-c */
+        else if (strcmp ("add-c", buffer) == 0)
         {
             SCAN_NEXT_TOKEN ();
             PARSE_REG (dst, buffer);
@@ -682,8 +682,8 @@ int parse_asm (FILE *source)
             }
         }
 
-        /* subc */
-        else if (strcmp ("subc", buffer) == 0)
+        /* sub-c */
+        else if (strcmp ("sub-c", buffer) == 0)
         {
             SCAN_NEXT_TOKEN ();
             PARSE_REG (dst, buffer);
