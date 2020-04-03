@@ -102,6 +102,8 @@ Instructions that could be dropped:
 
 --------
 
+ TODO: Consider renaming all 'ldi' to 'mov'
+
  00     mov     rX, { rX / 0xXX }
  10-13  unused
  14     mov     dh, rX
@@ -115,8 +117,8 @@ Instructions that could be dropped:
  30     st      [dh, rX], rX
  40     ld      rX, [0xXXXX]
  44     st      [0xXXXX], rX
- 48     ld      rX, dc
- 4c     st      dc, rX
+ 48     ld      rX, [dc++]
+ 4c     st      [dc++], rX
  50     pop     rX
  54     push    rX
  58-5f  unused
@@ -140,8 +142,8 @@ Instructions that could be dropped:
 
  70     input   rX
  74     output  rX
- 77     input   dc
- 79     output  dc
+ 78     input   [dc++]
+ 79     output  [dc++]
  7a
  7b
  7c

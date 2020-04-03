@@ -18,7 +18,6 @@ str_snepper1:
 show_string:
     push    r3          /* Save modified registers */
 
-    /* Perhaps cfg-set rX would be nice... */
     cfg-clr 0xf0
     cfg-set 0x00
     ld      r3, [0x4000]
@@ -109,34 +108,38 @@ main:
 
     /* Show "SNEPPER1" at 0x4000 */
     /* TODO: Loop / memcpy */
+    ldi     hl, 0x4000
+    mov     dc, hl
     ld      r1, [0x0010]
-    st      [0x4000], r1
+    st      [dc++], r1
     ld      r1, [0x0011]
-    st      [0x4001], r1
+    st      [dc++], r1
     ld      r1, [0x0012]
-    st      [0x4002], r1
+    st      [dc++], r1
     ld      r1, [0x0013]
-    st      [0x4003], r1
+    st      [dc++], r1
     ld      r1, [0x0014]
-    st      [0x4004], r1
+    st      [dc++], r1
     ld      r1, [0x0015]
-    st      [0x4005], r1
+    st      [dc++], r1
     ld      r1, [0x0016]
-    st      [0x4006], r1
+    st      [dc++], r1
     ld      r1, [0x0017]
-    st      [0x4007], r1
+    st      [dc++], r1
     call    show_string
 
     /* Blank display */
     mov     r1, 0x20
-    st      [0x4000], r1
-    st      [0x4001], r1
-    st      [0x4002], r1
-    st      [0x4003], r1
-    st      [0x4004], r1
-    st      [0x4005], r1
-    st      [0x4006], r1
-    st      [0x4007], r1
+    ldi     hl, 0x4000
+    mov     dc, hl
+    st      [dc++], r1
+    st      [dc++], r1
+    st      [dc++], r1
+    st      [dc++], r1
+    st      [dc++], r1
+    st      [dc++], r1
+    st      [dc++], r1
+    st      [dc++], r1
     call    show_string
 
     /* Initialise registers */

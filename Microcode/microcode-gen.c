@@ -254,8 +254,8 @@ void generate_microcode ()
             instruction++;
     }
 
-    /* ld rX, dc */
-    printf ("0x%02x - ld rX, dc\n", instruction);
+    /* ld rX, [dc++] */
+    printf ("0x%02x - ld rX, [dc++]\n", instruction);
     for (int dst = 0; dst < 4; dst++)
     {
             READ_INSTRUCTION ();
@@ -264,7 +264,8 @@ void generate_microcode ()
             instruction++;
     }
 
-    printf ("0x%02x - st dc, rX\n", instruction);
+    /* st [dc++], rX */
+    printf ("0x%02x - st [dc++], rX\n", instruction);
     for (int src = 0; src < 4; src++)
     {
             READ_INSTRUCTION ();

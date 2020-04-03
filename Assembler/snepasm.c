@@ -127,6 +127,21 @@ do \
     } \
 } while (0)
 
+#define STRIP_BRACKET() \
+do \
+{ \
+    int i; \
+    if ((buffer [0] == '[') && strchr (buffer, ']')) \
+    { \
+        for (i = 0; buffer [i + 1] != ']'; i++) \
+        { \
+            buffer [i] = buffer [i + 1]; \
+        } \
+        buffer [i] = '\0'; \
+    } \
+} while (0)
+
+
 #define PARSE_INT(value, ptr) \
 do \
 { \
@@ -383,7 +398,7 @@ int parse_asm (FILE *source)
                 SCAN_NEXT_TOKEN ();
 
                 /* ld rX, dc */
-                if (strcmp ("dc", buffer) == 0)
+                if (strncmp ("[dc++]", buffer, 6) == 0)
                 {
                     rom [address++] = LD_R1_DC + (dst << 0);
                 }
@@ -397,10 +412,9 @@ int parse_asm (FILE *source)
                 /* ld rX, [0xXXXX] */
                 else if (strncmp ("[", buffer, 1) == 0)
                 {
+                    STRIP_BRACKET ();
+                    PARSE_HEX_INT_OR_LABEL (value, buffer);
                     rom [address++] = LD_R1_XXXX + (dst << 0);
-                    /* TODO - This won't understand the brackets */
-                    fprintf (stderr, "Warning: ld Implementation is WIP.\n"); \
-                    PARSE_HEX_INT_OR_LABEL (value, &buffer [1]);
                     rom [address++] = (uint8_t) (value >> 8);
                     rom [address++] = (uint8_t) value;
                 }
@@ -421,7 +435,7 @@ int parse_asm (FILE *source)
             SCAN_NEXT_TOKEN ();
 
             /* st dc, rX */
-            if (strcmp ("dc", buffer) == 0)
+            if (strncmp ("[dc++]", buffer, 6) == 0)
             {
                 SCAN_NEXT_TOKEN ();
                 PARSE_REG (src, buffer);
@@ -439,9 +453,8 @@ int parse_asm (FILE *source)
             /* st [0xXXXX], rX */
             else if (strncmp ("[", buffer, 1) == 0)
             {
-                /* TODO - This won't understand the brackets */
-                fprintf (stderr, "Warning: st Implementation is WIP.\n"); \
-                PARSE_HEX_INT_OR_LABEL (value, & buffer [1]);
+                STRIP_BRACKET ();
+                PARSE_HEX_INT_OR_LABEL (value, buffer);
                 SCAN_NEXT_TOKEN ();
                 PARSE_REG (src, buffer);
                 rom [address++] = ST_XXXX_R1+ (src << 0);
