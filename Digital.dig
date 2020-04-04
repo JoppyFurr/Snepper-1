@@ -898,7 +898,7 @@ Control Logic Outputs:
             4 → none
             5 → none
             6 → none
-            7 → none
+            7 → Instruction Complete
 
   [0:2]   - Misc
             0 → PC Count
@@ -2584,7 +2584,12 @@ ae0,ae7,0,0,0,0,4920,4520,4620,ac7,0,0,0,0,4920,ae0,ae0,ae7,0,0,0,0,4920,a1c,54a
     </visualElement>
     <visualElement>
       <elementName>Or</elementName>
-      <elementAttributes/>
+      <elementAttributes>
+        <entry>
+          <string>Inputs</string>
+          <int>3</int>
+        </entry>
+      </elementAttributes>
       <pos x="-320" y="3220"/>
     </visualElement>
     <visualElement>
@@ -4948,6 +4953,10 @@ ff04,e3c4,ddc0,c012,3f00,309,3f02,2d,21c2,cc09,4892,12,8452,a150</data>
       <p2 x="-60" y="3240"/>
     </wire>
     <wire>
+      <p1 x="-340" y="3240"/>
+      <p2 x="-320" y="3240"/>
+    </wire>
+    <wire>
       <p1 x="-100" y="940"/>
       <p2 x="-80" y="940"/>
     </wire>
@@ -5210,6 +5219,10 @@ ff04,e3c4,ddc0,c012,3f00,309,3f02,2d,21c2,cc09,4892,12,8452,a150</data>
     <wire>
       <p1 x="520" y="3020"/>
       <p2 x="540" y="3020"/>
+    </wire>
+    <wire>
+      <p1 x="-660" y="3020"/>
+      <p2 x="-340" y="3020"/>
     </wire>
     <wire>
       <p1 x="-100" y="720"/>
@@ -6124,6 +6137,10 @@ ff04,e3c4,ddc0,c012,3f00,309,3f02,2d,21c2,cc09,4892,12,8452,a150</data>
       <p2 x="1360" y="2020"/>
     </wire>
     <wire>
+      <p1 x="-340" y="3020"/>
+      <p2 x="-340" y="3240"/>
+    </wire>
+    <wire>
       <p1 x="340" y="-60"/>
       <p2 x="340" y="-40"/>
     </wire>
@@ -6470,6 +6487,10 @@ ff04,e3c4,ddc0,c012,3f00,309,3f02,2d,21c2,cc09,4892,12,8452,a150</data>
     <wire>
       <p1 x="400" y="3100"/>
       <p2 x="400" y="3140"/>
+    </wire>
+    <wire>
+      <p1 x="-660" y="3020"/>
+      <p2 x="-660" y="3100"/>
     </wire>
     <wire>
       <p1 x="660" y="-60"/>
