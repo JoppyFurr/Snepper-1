@@ -70,8 +70,101 @@ show_string:
     pop     r3      /* Restore modified registers */
     ret
 
+
 /*
- * Output the 16-bit number stored at 0x3000 as decimal
+ * Blank the display
+ */
+blank_display:
+    push    r1
+    mov     r1, 0x20
+    cfg-clr 0xf0
+    cfg-set 0x00
+    output  r1
+    cfg-clr 0xf0
+    cfg-set 0x01
+    output  r1
+    cfg-clr 0xf0
+    cfg-set 0x02
+    output  r1
+    cfg-clr 0xf0
+    cfg-set 0x03
+    output  r1
+    cfg-clr 0xf0
+    cfg-set 0x04
+    output  r1
+    cfg-clr 0xf0
+    cfg-set 0x05
+    output  r1
+    cfg-clr 0xf0
+    cfg-set 0x06
+    output  r1
+    cfg-clr 0xf0
+    cfg-set 0x07
+    output  r1
+    pop     r1
+    ret
+
+/*
+ * Show "SNEPPER1"
+ */
+logo:
+    push    r1
+    mov     hl, 0x4000
+    mov     dc, hl
+    ld      r1, [0x0010]
+    st      [dc++], r1
+    ld      r1, [0x0011]
+    st      [dc++], r1
+    ld      r1, [0x0012]
+    st      [dc++], r1
+    ld      r1, [0x0013]
+    st      [dc++], r1
+    ld      r1, [0x0014]
+    st      [dc++], r1
+    ld      r1, [0x0015]
+    st      [dc++], r1
+    ld      r1, [0x0016]
+    st      [dc++], r1
+    ld      r1, [0x0017]
+    st      [dc++], r1
+    call    show_string
+    pop     r1
+    ret
+
+/*
+ * Replace leading zeros with whitespace
+ */
+whitespace_pad:
+    push    r1
+    push    r2
+    push    r3
+    push    r4
+
+    mov     r2, 0x20    /* whitespace */
+    mov     r3, 0       /* Index */
+    mov     r4, 0x40    /* High byte of address */
+
+whitespace_loop:
+
+    mov     dh, r4      /* TODO: Rename dh/dl to rh / rl? */
+    ld      r1, [dh, r3]
+    cmp     r1, 0
+    jmp-nz  whitespace_done
+    st      [dh, r3], r2
+
+    add     r3, 1
+    cmp     r3, 7
+    jmp-nz  whitespace_loop
+
+whitespace_done:
+    pop     r4
+    pop     r3
+    pop     r2
+    pop     r1
+    ret
+
+/*
+ * Display the 16-bit number stored at 0x3000
  */
 decimal_output:
     push    r1          /* Save modified registers */
@@ -84,17 +177,36 @@ decimal_output:
      * r3 - temp
      * r4 - Digit to output
      */
+
     ld      r1, [0x3000]
     ld      r2, [0x3001]
+
+    /* Zero the unused digits */
+    mov     r4, 0
+    st      [0x4000], r4
+    st      [0x4001], r4
+    st      [0x4002], r4
+
+decimal_10_000s_loop:
+    sub     r2, 0x10 /* 10000_low  */
+    sub-c   r1, 0x27 /* 10000_high */
+    jmp-c   decimal_10_000s_finish
+    add     r4, 1
+    jmp     decimal_10_000s_loop
+decimal_10_000s_finish:
+    /* Add the last 10000 back */
+    add     r2, 0x10 /* 10000_low  */
+    add-c   r1, 0x27 /* 10000_high */
+    st      [0x4003], r4
     mov     r4, 0
 
-decimal_1000s_loop:
+decimal_1_000s_loop:
     sub     r2, 0xe8 /* 1000_low  */
     sub-c   r1, 0x03 /* 1000_high */
-    jmp-c   decimal_1000s_finish
+    jmp-c   decimal_1_000s_finish
     add     r4, 1
-    jmp     decimal_1000s_loop
-decimal_1000s_finish:
+    jmp     decimal_1_000s_loop
+decimal_1_000s_finish:
     /* Add the last 1000 back */
     add     r2, 0xe8 /* 1000_low  */
     add-c   r1, 0x03 /* 1000_high */
@@ -126,6 +238,8 @@ decimal_10s_finish:
 decimal_1s:
     st      [0x4007], r2 /* Output the ones */
 
+    call    whitespace_pad
+    call    blank_display
     call    show_string
 
     pop     r4      /* Restore modified registers */
@@ -141,41 +255,7 @@ main:
     mov     hl, 0x2000
     mov     sp, hl
 
-    /* Show "SNEPPER1" at 0x4000 */
-    /* TODO: Loop / memcpy */
-    mov     hl, 0x4000
-    mov     dc, hl
-    ld      r1, [0x0010]
-    st      [dc++], r1
-    ld      r1, [0x0011]
-    st      [dc++], r1
-    ld      r1, [0x0012]
-    st      [dc++], r1
-    ld      r1, [0x0013]
-    st      [dc++], r1
-    ld      r1, [0x0014]
-    st      [dc++], r1
-    ld      r1, [0x0015]
-    st      [dc++], r1
-    ld      r1, [0x0016]
-    st      [dc++], r1
-    ld      r1, [0x0017]
-    st      [dc++], r1
-    call    show_string
-
-    /* Blank display */
-    mov     r1, 0x20
-    mov     hl, 0x4000
-    mov     dc, hl
-    st      [dc++], r1
-    st      [dc++], r1
-    st      [dc++], r1
-    st      [dc++], r1
-    st      [dc++], r1
-    st      [dc++], r1
-    st      [dc++], r1
-    st      [dc++], r1
-    call    show_string
+    call    logo
 
     /*
      * Initialise memory
@@ -194,10 +274,10 @@ main:
     st      [0x3005], r1
     mov     r4, 0
 
-loop:
+main_loop:
     /* TODO: fib(n) = fib(n-1) + fib(n-2) */
     ld      r1, [0x3003]
-    ld      r2, [0x3005]  
+    ld      r2, [0x3005]
     add     r1, r2
     st      [0x3001], r1
     ld      r1, [0x3002]
@@ -221,10 +301,10 @@ loop:
 
     /* Loop for 20 Fibonacci numbers */
     add     r4, 1
-    cmp     r4, 20
+    cmp     r4, 24
     jmp-z   exit
 
-    jmp     loop
+    jmp     main_loop
 
 exit:
     halt
