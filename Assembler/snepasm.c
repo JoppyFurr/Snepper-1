@@ -315,8 +315,22 @@ int parse_asm (FILE *source)
         {
             SCAN_NEXT_TOKEN ();
 
+            /* mov rh, rX */
+            if (strncmp ("rh", buffer, 2) == 0)
+            {
+                SCAN_NEXT_TOKEN ();
+                PARSE_REG (src, buffer);
+                rom [address++] = MOV_RH_R1 + (src << 0);
+            }
+            /* mov rl, rX */
+            else if (strncmp ("rl", buffer, 2) == 0)
+            {
+                SCAN_NEXT_TOKEN ();
+                PARSE_REG (src, buffer);
+                rom [address++] = MOV_RL_R1 + (src << 0);
+            }
             /* mov rX, rX */
-            if (strncmp ("r", buffer, 1) == 0)
+            else if (strncmp ("r", buffer, 1) == 0)
             {
                 PARSE_REG (dst, buffer);
                 SCAN_NEXT_TOKEN ();
@@ -331,20 +345,6 @@ int parse_asm (FILE *source)
                     rom [address++] = MOV_R1_R1 + (dst << 2) + (dst << 0);
                     rom [address++] = (uint8_t) value;
                 }
-            }
-            /* mov dh, rX */
-            else if (strncmp ("dh", buffer, 2) == 0)
-            {
-                SCAN_NEXT_TOKEN ();
-                PARSE_REG (src, buffer);
-                rom [address++] = MOV_DH_R1 + (src << 0);
-            }
-            /* mov dl, rX */
-            else if (strncmp ("dl", buffer, 2) == 0)
-            {
-                SCAN_NEXT_TOKEN ();
-                PARSE_REG (src, buffer);
-                rom [address++] = MOV_DL_R1 + (src << 0);
             }
             /* mov hl, 0xXXXX */
             else if (strncmp ("hl", buffer, 2) == 0)
@@ -391,12 +391,12 @@ int parse_asm (FILE *source)
                 {
                     rom [address++] = LD_R1_DC + (dst << 0);
                 }
-                /* ld rX, [dh, rX] */
-                else if (strncmp ("[dh", buffer, 3) == 0)
+                /* ld rX, [rh, rX] */
+                else if (strncmp ("[rh", buffer, 3) == 0)
                 {
                     SCAN_NEXT_TOKEN ();
                     PARSE_REG (src, buffer);
-                    rom [address++] = LD_R1_DH_R1 + (dst << 2) + (src << 0);
+                    rom [address++] = LD_R1_RH_R1 + (dst << 2) + (src << 0);
                 }
                 /* ld rX, [0xXXXX] */
                 else if (strncmp ("[", buffer, 1) == 0)
@@ -430,14 +430,14 @@ int parse_asm (FILE *source)
                 PARSE_REG (src, buffer);
                 rom [address++] = ST_DC_R1 + (src << 0);
             }
-            /* st [dh, rX], rx */
-            else if (strncmp ("[dh", buffer, 3) == 0)
+            /* st [rh, rX], rx */
+            else if (strncmp ("[rh", buffer, 3) == 0)
             {
                 SCAN_NEXT_TOKEN ();
                 PARSE_REG (dst, buffer);
                 SCAN_NEXT_TOKEN ();
                 PARSE_REG (src, buffer);
-                rom [address++] = ST_DH_R1_R1 + (dst << 2) + (src << 0);
+                rom [address++] = ST_RH_R1_R1 + (dst << 2) + (src << 0);
             }
             /* st [0xXXXX], rX */
             else if (strncmp ("[", buffer, 1) == 0)

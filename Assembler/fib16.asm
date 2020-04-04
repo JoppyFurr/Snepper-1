@@ -146,11 +146,11 @@ whitespace_pad:
 
 whitespace_loop:
 
-    mov     dh, r4      /* TODO: Rename dh/dl to rh / rl? */
-    ld      r1, [dh, r3]
+    mov     rh, r4
+    ld      r1, [rh, r3]
     cmp     r1, 0
     jmp-nz  whitespace_done
-    st      [dh, r3], r2
+    st      [rh, r3], r2
 
     add     r3, 1
     cmp     r3, 7

@@ -372,7 +372,7 @@ Bootstrap Plan:
       <elementAttributes>
         <entry>
           <string>Label</string>
-          <string>dh</string>
+          <string>rh</string>
         </entry>
         <entry>
           <string>Bits</string>
@@ -386,7 +386,7 @@ Bootstrap Plan:
       <elementAttributes>
         <entry>
           <string>Label</string>
-          <string>dl</string>
+          <string>rl</string>
         </entry>
         <entry>
           <string>Bits</string>
