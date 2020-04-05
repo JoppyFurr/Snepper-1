@@ -275,7 +275,7 @@ main:
     mov     r4, 0
 
 main_loop:
-    /* TODO: fib(n) = fib(n-1) + fib(n-2) */
+    /* fib(n) = fib(n-1) + fib(n-2) */
     ld      r1, [0x3003]
     ld      r2, [0x3005]
     add     r1, r2

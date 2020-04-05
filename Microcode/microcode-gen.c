@@ -119,7 +119,6 @@ do \
     } \
 } while (0)
 
-/* TODO: A number of instructions have an empty final step, just so they can count. Perhaps final-step needs to be in addr-in or data-in? */
 #define EMPTY_FINAL_STEP (ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP)
 
 /*

@@ -256,17 +256,37 @@ int parse_asm (FILE *source)
     while (fscanf (source, "%79s", buffer) != EOF)
     {
         /* Comment */
-        /* TODO:Allow comments to end without whitespace */
-        if (strcmp ("/*", buffer) == 0)
+        if (strstr (buffer, "/*") != NULL)
         {
-            do
+            char *token_start;
+            char *token_end;
+
+            token_start = strdup (buffer);
+
+            while ((token_end = strstr (buffer, "*/")) == NULL)
             {
                 SCAN_NEXT_TOKEN ();
-            } while (strcmp ("*/", buffer) != 0);
+            }
+            token_end = strdup (token_end + 2);
+
+            /* Take from the first string until the comment begins */
+            strcpy (buffer, token_start);
+
+            /* Take from the second string after the comment ends */
+            strcpy (strstr(buffer, "/*"), token_end);
+
+            free (token_start);
+            free (token_end);
+
+            /* If the comment wasn't inside a word, move on to the next token */
+            if (buffer [0] == '\0')
+            {
+                continue;
+            }
         }
 
         /* Offset */
-        else if (strncmp (".", buffer, 1) == 0)
+        if (strncmp (".", buffer, 1) == 0)
         {
             PARSE_HEX_INT (address, & buffer [1]);
         }
