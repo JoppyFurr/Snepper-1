@@ -145,7 +145,7 @@ do \
 #define PARSE_INT(value, ptr) \
 do \
 { \
-    /* TODO: Won't work with whitespace */ \
+    /* TODO: Parses a single char, won't do whitespace */ \
     if (ptr [0] == '\'' && ptr [2] == '\'') \
     {\
         value = ptr [1];\

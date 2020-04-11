@@ -79,6 +79,7 @@ Assembler macros / instructions to implement:
         reset
         rom-enable
         rom-disable
+        named addresses for ram variables
 
 Features that may be useful:
         mov     rX, ah/al

@@ -12,13 +12,13 @@ typedef enum DataDriver_e {
     DATA_OUT_MEM    = 0x4000,
     DATA_OUT_AH     = 0x5000,
     DATA_OUT_AL     = 0x6000,
-    DATA_OUT_ADD    = 0x7000,
-    DATA_OUT_ADD_C  = 0x8000,
-    DATA_OUT_SUB    = 0x9000,
-    DATA_OUT_SUB_C  = 0xa000,
-    DATA_OUT_OR     = 0xb000,
-    DATA_OUT_AND    = 0xc000,
-    DATA_OUT_XOR    = 0xd000,
+    DATA_OUT_ADDSUB = 0x7000,
+    DATA_OUT_OR     = 0x8000,
+    DATA_OUT_AND    = 0x9000,
+    DATA_OUT_XOR    = 0xa000,
+    DATA_OUT_none   = 0xb000,
+    DATA_OUT_none2  = 0xc000,
+    DATA_OUT_none3  = 0xd000,
     DATA_OUT_CFG    = 0xe000,
     DATA_OUT_INPUT  = 0xf000
 } DataDriver;
@@ -56,7 +56,7 @@ typedef enum AddressConsumer_e {
     ADDR_IN_AH_AL   = 0x0018,
     ADDR_IN_none    = 0x0020,
     ADDR_IN_none2   = 0x0028,
-    ADDR_IN_none3   = 0x0030,
+    ADDR_SUB        = 0x0030,
     ADDR_FINAL_STEP = 0x0038,
 } AddressConsumer;
 
@@ -65,9 +65,9 @@ typedef enum Misc_e {
     MISC_DC_COUNT   = 0x0001,
     MISC_SP_INC     = 0x0002,
     MISC_SP_DEC     = 0x0003,
-    MISC_none       = 0x0004,
-    MISC_none2      = 0x0005,
-    MISC_none3      = 0x0006,
+    MISC_CLR_CARRY  = 0x0004,
+    MISC_none       = 0x0005,
+    MISC_none2      = 0x0006,
     MISC_FINAL_STEP = 0x0007,
 } Misc;
 
@@ -108,18 +108,32 @@ do \
 #define ALU_INPUT_STEP_1_2() \
 do \
 { \
-    store_step (instruction,     1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [dst] | DATA_IN_A1        | MISC_none); \
+    store_step (instruction,     1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [dst] | DATA_IN_A1 | MISC_none); \
     if (src == dst) \
     { \
-        store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM       | DATA_IN_A2        | MISC_PC_COUNT); \
+        store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM       | DATA_IN_A2 | MISC_PC_COUNT); \
     } \
     else \
     { \
-        store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | DATA_IN_A2        | MISC_none); \
+        store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | DATA_IN_A2 | MISC_none); \
     } \
 } while (0)
 
-#define EMPTY_FINAL_STEP (ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP)
+#define ALU_INPUT_STEP_1_2_CLR_CARRY() \
+do \
+{ \
+    store_step (instruction,     1, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [dst] | DATA_IN_A1 | MISC_CLR_CARRY); \
+    if (src == dst) \
+    { \
+        store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM       | DATA_IN_A2 | MISC_PC_COUNT); \
+    } \
+    else \
+    { \
+        store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | data_out_reg [src] | DATA_IN_A2 | MISC_none); \
+    } \
+} while (0)
+
+#define EMPTY_FINAL_STEP (ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP)
 
 /*
  * Generate the microcode.
@@ -187,13 +201,13 @@ void generate_microcode ()
     /* mov dc, hl */
     printf ("0x%02x - mov dc, hl\n", instruction);
     READ_INSTRUCTION ();
-    store_step (instruction, 1, ADDR_OUT_HL | ADDR_IN_DC | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    store_step (instruction, 1, ADDR_OUT_HL | ADDR_IN_DC | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
     /* mov sp, hl */
     printf ("0x%02x - mov sp, hl\n", instruction);
     READ_INSTRUCTION ();
-    store_step (instruction, 1, ADDR_OUT_HL | ADDR_IN_SP | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    store_step (instruction, 1, ADDR_OUT_HL | ADDR_IN_SP | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
     /* unused */
@@ -274,8 +288,8 @@ void generate_microcode ()
     for (int dst = 0; dst < 4; dst++)
     {
             READ_INSTRUCTION ();
-            store_step (instruction, 1, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_none      | MISC_SP_DEC);
-            store_step (instruction, 2, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM | data_in_reg [dst] | MISC_FINAL_STEP);
+            store_step (instruction, 1, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_none | DATA_IN_none      | MISC_SP_DEC);
+            store_step (instruction, 2, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM  | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
     }
 
@@ -300,7 +314,7 @@ void generate_microcode ()
     /* jmp hl */
     printf ("0x%02x - jmp hl\n", instruction);
     READ_INSTRUCTION ();
-    store_step (instruction, 1, ADDR_OUT_HL | ADDR_IN_PC | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    store_step (instruction, 1, ADDR_OUT_HL | ADDR_IN_PC | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
     /* unused */
@@ -312,37 +326,37 @@ void generate_microcode ()
     /* jmp-z hl */
     printf ("0x%02x - jmp-z hl\n", instruction);
     READ_INSTRUCTION ();
-    store_step_conditional (instruction, false, 1, ADDR_OUT_HL | ADDR_IN_none | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
-    store_step_conditional (instruction, true , 1, ADDR_OUT_HL | ADDR_IN_PC   | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    store_step_conditional (instruction, false, 1, ADDR_OUT_HL | ADDR_IN_none | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
+    store_step_conditional (instruction, true , 1, ADDR_OUT_HL | ADDR_IN_PC   | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
     /* jmp-c hl */
     printf ("0x%02x - jmp-c hl\n", instruction);
     READ_INSTRUCTION ();
-    store_step_conditional (instruction, false, 1, ADDR_OUT_HL | ADDR_IN_none | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
-    store_step_conditional (instruction, true,  1, ADDR_OUT_HL | ADDR_IN_PC   | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    store_step_conditional (instruction, false, 1, ADDR_OUT_HL | ADDR_IN_none | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
+    store_step_conditional (instruction, true,  1, ADDR_OUT_HL | ADDR_IN_PC   | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
     /* jmp-nz hl */
     printf ("0x%02x - jmp-nz hl\n", instruction);
     READ_INSTRUCTION ();
-    store_step_conditional (instruction, false, 1, ADDR_OUT_HL | ADDR_IN_PC   | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
-    store_step_conditional (instruction, true,  1, ADDR_OUT_HL | ADDR_IN_none | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    store_step_conditional (instruction, false, 1, ADDR_OUT_HL | ADDR_IN_PC   | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
+    store_step_conditional (instruction, true,  1, ADDR_OUT_HL | ADDR_IN_none | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
     /* jmp-nc hl */
     printf ("0x%02x - jmp-nc hl\n", instruction);
     READ_INSTRUCTION ();
-    store_step_conditional (instruction, false, 1, ADDR_OUT_HL | ADDR_IN_PC   | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
-    store_step_conditional (instruction, true,  1, ADDR_OUT_HL | ADDR_IN_none | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    store_step_conditional (instruction, false, 1, ADDR_OUT_HL | ADDR_IN_PC   | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
+    store_step_conditional (instruction, true,  1, ADDR_OUT_HL | ADDR_IN_none | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
     /* jmp 0xXXXX */
     printf ("0x%02x - jmp 0xXXXX\n", instruction);
     READ_INSTRUCTION ();
-    store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_RH   | MISC_PC_COUNT);
-    store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_RL   | MISC_PC_COUNT);
-    store_step (instruction, 3, ADDR_OUT_HL | ADDR_IN_PC   | DATA_OUT_R1  | DATA_IN_none | MISC_FINAL_STEP);
+    store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM  | DATA_IN_RH   | MISC_PC_COUNT);
+    store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_MEM  | DATA_IN_RL   | MISC_PC_COUNT);
+    store_step (instruction, 3, ADDR_OUT_HL | ADDR_IN_PC   | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
     /* unused */
@@ -354,70 +368,70 @@ void generate_microcode ()
     /* jmp-z 0xXXXX */
     printf ("0x%02x - jmp-z 0xXXXX\n", instruction);
     READ_INSTRUCTION ();
-    store_step_conditional (instruction, false, 1, ADDR_OUT_HL | ADDR_IN_none    | DATA_OUT_R1  | DATA_IN_none | MISC_PC_COUNT);
-    store_step_conditional (instruction, false, 2, ADDR_OUT_HL | ADDR_FINAL_STEP | DATA_OUT_R1  | DATA_IN_none | MISC_PC_COUNT);
-    store_step_conditional (instruction, true,  1, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM | DATA_IN_RH   | MISC_PC_COUNT);
-    store_step_conditional (instruction, true,  2, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM | DATA_IN_RL   | MISC_PC_COUNT);
-    store_step_conditional (instruction, true,  3, ADDR_OUT_HL | ADDR_IN_PC      | DATA_OUT_R1  | DATA_IN_none | MISC_FINAL_STEP);
+    store_step_conditional (instruction, false, 1, ADDR_OUT_HL | ADDR_IN_none    | DATA_OUT_none | DATA_IN_none | MISC_PC_COUNT);
+    store_step_conditional (instruction, false, 2, ADDR_OUT_HL | ADDR_FINAL_STEP | DATA_OUT_none | DATA_IN_none | MISC_PC_COUNT);
+    store_step_conditional (instruction, true,  1, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM  | DATA_IN_RH   | MISC_PC_COUNT);
+    store_step_conditional (instruction, true,  2, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM  | DATA_IN_RL   | MISC_PC_COUNT);
+    store_step_conditional (instruction, true,  3, ADDR_OUT_HL | ADDR_IN_PC      | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
     /* jmp-c 0xXXXX */
     printf ("0x%02x - jmp-c 0xXXXX\n", instruction);
     READ_INSTRUCTION ();
-    store_step_conditional (instruction, false, 1, ADDR_OUT_HL | ADDR_IN_none    | DATA_OUT_R1  | DATA_IN_none | MISC_PC_COUNT);
-    store_step_conditional (instruction, false, 2, ADDR_OUT_HL | ADDR_FINAL_STEP | DATA_OUT_R1  | DATA_IN_none | MISC_PC_COUNT);
-    store_step_conditional (instruction, true,  1, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM | DATA_IN_RH   | MISC_PC_COUNT);
-    store_step_conditional (instruction, true,  2, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM | DATA_IN_RL   | MISC_PC_COUNT);
-    store_step_conditional (instruction, true,  3, ADDR_OUT_HL | ADDR_IN_PC      | DATA_OUT_R1  | DATA_IN_none | MISC_FINAL_STEP);
+    store_step_conditional (instruction, false, 1, ADDR_OUT_HL | ADDR_IN_none    | DATA_OUT_none | DATA_IN_none | MISC_PC_COUNT);
+    store_step_conditional (instruction, false, 2, ADDR_OUT_HL | ADDR_FINAL_STEP | DATA_OUT_none | DATA_IN_none | MISC_PC_COUNT);
+    store_step_conditional (instruction, true,  1, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM  | DATA_IN_RH   | MISC_PC_COUNT);
+    store_step_conditional (instruction, true,  2, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM  | DATA_IN_RL   | MISC_PC_COUNT);
+    store_step_conditional (instruction, true,  3, ADDR_OUT_HL | ADDR_IN_PC      | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
     /* jmp-nz 0xXXXX */
     printf ("0x%02x - jmp-nz 0xXXXX\n", instruction);
     READ_INSTRUCTION ();
-    store_step_conditional (instruction, false, 1, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM | DATA_IN_RH   | MISC_PC_COUNT);
-    store_step_conditional (instruction, false, 2, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM | DATA_IN_RL   | MISC_PC_COUNT);
-    store_step_conditional (instruction, false, 3, ADDR_OUT_HL | ADDR_IN_PC      | DATA_OUT_R1  | DATA_IN_none | MISC_FINAL_STEP);
-    store_step_conditional (instruction, true,  1, ADDR_OUT_HL | ADDR_IN_none    | DATA_OUT_R1  | DATA_IN_none | MISC_PC_COUNT);
-    store_step_conditional (instruction, true,  2, ADDR_OUT_HL | ADDR_FINAL_STEP | DATA_OUT_R1  | DATA_IN_none | MISC_PC_COUNT);
+    store_step_conditional (instruction, false, 1, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM  | DATA_IN_RH   | MISC_PC_COUNT);
+    store_step_conditional (instruction, false, 2, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM  | DATA_IN_RL   | MISC_PC_COUNT);
+    store_step_conditional (instruction, false, 3, ADDR_OUT_HL | ADDR_IN_PC      | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
+    store_step_conditional (instruction, true,  1, ADDR_OUT_HL | ADDR_IN_none    | DATA_OUT_none | DATA_IN_none | MISC_PC_COUNT);
+    store_step_conditional (instruction, true,  2, ADDR_OUT_HL | ADDR_FINAL_STEP | DATA_OUT_none | DATA_IN_none | MISC_PC_COUNT);
     instruction++;
 
     /* jmp-nc 0xXXXX */
     printf ("0x%02x - jmp-nc 0xXXXX\n", instruction);
     READ_INSTRUCTION ();
-    store_step_conditional (instruction, false, 1, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM | DATA_IN_RH   | MISC_PC_COUNT);
-    store_step_conditional (instruction, false, 2, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM | DATA_IN_RL   | MISC_PC_COUNT);
-    store_step_conditional (instruction, false, 3, ADDR_OUT_HL | ADDR_IN_PC      | DATA_OUT_R1  | DATA_IN_none | MISC_FINAL_STEP);
-    store_step_conditional (instruction, true,  1, ADDR_OUT_HL | ADDR_IN_none    | DATA_OUT_R1  | DATA_IN_none | MISC_PC_COUNT);
-    store_step_conditional (instruction, true,  2, ADDR_OUT_HL | ADDR_FINAL_STEP | DATA_OUT_R1  | DATA_IN_none | MISC_PC_COUNT);
+    store_step_conditional (instruction, false, 1, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM  | DATA_IN_RH   | MISC_PC_COUNT);
+    store_step_conditional (instruction, false, 2, ADDR_OUT_PC | ADDR_IN_none    | DATA_OUT_MEM  | DATA_IN_RL   | MISC_PC_COUNT);
+    store_step_conditional (instruction, false, 3, ADDR_OUT_HL | ADDR_IN_PC      | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
+    store_step_conditional (instruction, true,  1, ADDR_OUT_HL | ADDR_IN_none    | DATA_OUT_none | DATA_IN_none | MISC_PC_COUNT);
+    store_step_conditional (instruction, true,  2, ADDR_OUT_HL | ADDR_FINAL_STEP | DATA_OUT_none | DATA_IN_none | MISC_PC_COUNT);
     instruction++;
 
     /* call hl */
     printf ("0x%02x - call hl\n", instruction);
     READ_INSTRUCTION ();
-    store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_AH_AL | DATA_OUT_R1 | DATA_IN_none | MISC_none);
-    store_step (instruction, 2, ADDR_OUT_SP | ADDR_IN_none  | DATA_OUT_AH | DATA_IN_RAM  | MISC_SP_INC);
-    store_step (instruction, 3, ADDR_OUT_SP | ADDR_IN_none  | DATA_OUT_AL | DATA_IN_RAM  | MISC_SP_INC);
-    store_step (instruction, 4, ADDR_OUT_HL | ADDR_IN_PC    | DATA_OUT_R1 | DATA_IN_none | MISC_FINAL_STEP);
+    store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_AH_AL | DATA_OUT_none | DATA_IN_none | MISC_none);
+    store_step (instruction, 2, ADDR_OUT_SP | ADDR_IN_none  | DATA_OUT_AH   | DATA_IN_RAM  | MISC_SP_INC);
+    store_step (instruction, 3, ADDR_OUT_SP | ADDR_IN_none  | DATA_OUT_AL   | DATA_IN_RAM  | MISC_SP_INC);
+    store_step (instruction, 4, ADDR_OUT_HL | ADDR_IN_PC    | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
     /* call 0xXXXX */
     printf ("0x%02x - call 0xXXXX\n", instruction);
     READ_INSTRUCTION ();
-    store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none  | DATA_OUT_MEM | DATA_IN_RH   | MISC_PC_COUNT);
-    store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none  | DATA_OUT_MEM | DATA_IN_RL   | MISC_PC_COUNT);
-    store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_AH_AL | DATA_OUT_R1  | DATA_IN_none | MISC_none);
-    store_step (instruction, 4, ADDR_OUT_SP | ADDR_IN_none  | DATA_OUT_AH  | DATA_IN_RAM  | MISC_SP_INC);
-    store_step (instruction, 5, ADDR_OUT_SP | ADDR_IN_none  | DATA_OUT_AL  | DATA_IN_RAM  | MISC_SP_INC);
-    store_step (instruction, 6, ADDR_OUT_HL | ADDR_IN_PC    | DATA_OUT_R1  | DATA_IN_none | MISC_FINAL_STEP);
+    store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none  | DATA_OUT_MEM  | DATA_IN_RH   | MISC_PC_COUNT);
+    store_step (instruction, 2, ADDR_OUT_PC | ADDR_IN_none  | DATA_OUT_MEM  | DATA_IN_RL   | MISC_PC_COUNT);
+    store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_AH_AL | DATA_OUT_none | DATA_IN_none | MISC_none);
+    store_step (instruction, 4, ADDR_OUT_SP | ADDR_IN_none  | DATA_OUT_AH   | DATA_IN_RAM  | MISC_SP_INC);
+    store_step (instruction, 5, ADDR_OUT_SP | ADDR_IN_none  | DATA_OUT_AL   | DATA_IN_RAM  | MISC_SP_INC);
+    store_step (instruction, 6, ADDR_OUT_HL | ADDR_IN_PC    | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
     /* ret */
     printf ("0x%02x - ret\n", instruction);
     READ_INSTRUCTION ();
-    store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_R1  | DATA_IN_none | MISC_SP_DEC);
-    store_step (instruction, 2, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_RL   | MISC_SP_DEC);
-    store_step (instruction, 3, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM | DATA_IN_RH   | MISC_none);
-    store_step (instruction, 4, ADDR_OUT_HL | ADDR_IN_PC   | DATA_OUT_R1  | DATA_IN_none | MISC_FINAL_STEP);
+    store_step (instruction, 1, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_none | DATA_IN_none | MISC_SP_DEC);
+    store_step (instruction, 2, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM  | DATA_IN_RL   | MISC_SP_DEC);
+    store_step (instruction, 3, ADDR_OUT_SP | ADDR_IN_none | DATA_OUT_MEM  | DATA_IN_RH   | MISC_none);
+    store_step (instruction, 4, ADDR_OUT_HL | ADDR_IN_PC   | DATA_OUT_none | DATA_IN_none | MISC_FINAL_STEP);
     instruction++;
 
     /* unused */
@@ -482,21 +496,21 @@ void generate_microcode ()
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION ();
-            ALU_INPUT_STEP_1_2 ();
-            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_ADD | data_in_reg [dst] | MISC_FINAL_STEP);
+            ALU_INPUT_STEP_1_2_CLR_CARRY ();
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_ADDSUB | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
 
-    /* addc rX, { rX / 0xXX } */
-    printf ("0x%02x - addc rX, { rX / 0xXX }\n", instruction);
+    /* add-c rX, { rX / 0xXX } */
+    printf ("0x%02x - add-c rX, { rX / 0xXX }\n", instruction);
     for (int dst = 0; dst < 4; dst++)
     {
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION ();
             ALU_INPUT_STEP_1_2 ();
-            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_ADD_C | data_in_reg [dst] | MISC_FINAL_STEP);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_ADDSUB | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -508,21 +522,21 @@ void generate_microcode ()
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION ();
-            ALU_INPUT_STEP_1_2 ();
-            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_SUB | data_in_reg [dst] | MISC_FINAL_STEP);
+            ALU_INPUT_STEP_1_2_CLR_CARRY ();
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_SUB | DATA_OUT_ADDSUB | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
 
-    /* subc rX, { rX / 0xXX } */
-    printf ("0x%02x - subc rX, { rX / 0xXX }\n", instruction);
+    /* sub-c rX, { rX / 0xXX } */
+    printf ("0x%02x - sub-c rX, { rX / 0xXX }\n", instruction);
     for (int dst = 0; dst < 4; dst++)
     {
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION ();
             ALU_INPUT_STEP_1_2 ();
-            store_step (instruction, 3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_SUB_C | data_in_reg [dst] | MISC_FINAL_STEP);
+            store_step (instruction, 3, ADDR_OUT_PC | ADDR_SUB | DATA_OUT_ADDSUB | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -570,7 +584,7 @@ void generate_microcode ()
         {
             READ_INSTRUCTION ();
             ALU_INPUT_STEP_1_2 ();
-            store_step (instruction,     3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_XOR       | data_in_reg [dst] | MISC_FINAL_STEP);
+            store_step (instruction,     3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_XOR | data_in_reg [dst] | MISC_FINAL_STEP);
             instruction++;
         }
     }
@@ -582,8 +596,8 @@ void generate_microcode ()
         for (int src = 0; src < 4; src++)
         {
             READ_INSTRUCTION ();
-            ALU_INPUT_STEP_1_2 ();
-            store_step (instruction,     3, ADDR_OUT_PC | ADDR_IN_none | DATA_OUT_SUB       | DATA_IN_none      | MISC_FINAL_STEP);
+            ALU_INPUT_STEP_1_2_CLR_CARRY ();
+            store_step (instruction,     3, ADDR_OUT_PC | ADDR_SUB | DATA_OUT_ADDSUB | DATA_IN_none | MISC_FINAL_STEP);
             instruction++;
         }
     }
