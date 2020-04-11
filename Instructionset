@@ -9,35 +9,36 @@ Control Logic Inputs:
 Control Logic Outputs:
 
   [12:15] - Data Bus Driver
-            0 → r1
-            1 → r2
-            2 → r3
-            3 → r4
-            4 → ram
-            5 → ah
-            6 → al
-            7 → add
-            8 → add-c
-            9 → sub
-            a → sub-c
-            b → or
-            c → and
-            d → xor
+            0 → none
+            1 → r1
+            2 → r2
+            3 → r3
+            4 → r4
+            5 → ram
+            6 → ah
+            7 → al
+            8 → add/sub
+            8 → or
+            9 → and
+            a → xor
+            b → none
+            c → none
+            d → none
             e → CFG
             f → I/O
 
   [8:11]  - Data Bus Consumer
-            0 → r1
-            1 → r2
-            2 → r3
-            3 → r4
-            4 → ram
-            5 → dh
-            6 → dl
-            7 → a1
-            8 → a2
-            9 → IR
-            a → none
+            0 → none
+            1 → r1
+            2 → r2
+            3 → r3
+            4 → r4
+            5 → ram
+            6 → dh
+            7 → dl
+            8 → a1
+            9 → a2
+            a → IR
             b → none
             c → none
             d → none
@@ -51,22 +52,22 @@ Control Logic Outputs:
             3 → DH/DL
 
   [3:5]   - Address Bus Consumer
-            0 → PC
-            1 → DC
-            2 → SP
-            3 → AH/AL
-            4 → none
+            0 → none
+            1 → PC
+            2 → DC
+            3 → SP
+            4 → AH/AL
             5 → none
-            6 → none
-            7 → none
+            6 → Sub
+            7 → PC Count
 
   [0:2]   - Misc
-            0 → PC Count
-            1 → DC Count
-            2 → SP Increase
-            3 → SP Decrease
-            4 → none (I/O control?)
-            5 → none
+            0 → none
+            1 → PC Count
+            2 → DC Count
+            3 → SP Increase
+            4 → SP Decrease
+            5 → Clear Carry
             6 → none
             7 → Instruction complete
 
